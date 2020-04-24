@@ -1,0 +1,17 @@
+.transistor {
+    /*
+    fill: #ffffff;
+    background-size: 100px 82px;
+    background-size: contain;
+    text-indent: -9999px;
+    display: block;
+    width: 30px;
+    height: 30px;
+    content: "";
+    background: url(sprites.svg);
+    */
+}
+
+.random {
+    background: url("sprites.svg") -61px -1px;
+}
