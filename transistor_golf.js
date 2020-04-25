@@ -1,3 +1,51 @@
+class Transistor{
+    constructor(id){
+        this.gate_id = id;
+        this.source_id = id + 1;
+        this.drain_id = id + 2;
+        this.x = 0;
+        this.y = 0;
+        this.rot = 0;
+    }
+
+    rotate90(){
+        //rotation by 90 degrees
+        this.rot = (this.rot + 1) % 4;
+    }
+
+    move_to(x, y){
+        this.x = parseInt(x / 4);
+        this.y = parseInt(y / 4);
+    }
+
+    get_id2xy(){
+        const x = this.x;
+        const y = this.y;
+        const rot = this.rot;
+
+        return {this.gate_id:   [G[rot][0], G[rot][1]],
+                this.source_id: [S[rot][0], S[rot][1]],
+                this.drain_id:  [D[rot][0], D[rot][1]]};
+    }
+
+    get_clauses(){
+        return [[-this.gate_id, this.source_id, -this.drain_id], 
+                [-this.gate_id, -this.source_id, this.drain_id]];
+    }
+
+    /* P-channel version, or whatever it's called
+    get_clauses(){
+        return [[this.gate_id, this.source_id, -this.drain_id], 
+                [this.gate_id, -this.source_id, this.drain_id]];
+    }
+    */
+
+}
+
+const G = [[1, 0], [-1, 1], [-2, -1], [0, -2]];
+const S = [[0, 1], [-2, 0], [-1, -2], [1, -1]];
+const D = [[2, 1], [-2, 2], [-3, -2], [1, -3]];
+
 function make_draggable(event){
     var svg = event.target;
     svg.addEventListener("mousedown", start_drag);
@@ -6,7 +54,7 @@ function make_draggable(event){
     svg.addEventListener("mouseup", end_drag);
     svg.addEventListener("mouseleave", end_drag);
 
-    var selected_element = false;
+    var elem = false;
     var offset;
 
     spawn();
@@ -15,12 +63,12 @@ function make_draggable(event){
         event.preventDefault();
         if (event.target.classList.contains("draggable")){
             if (event.button == 0){
-                selected_element = event.target;
+                elem = event.target;
                 var coord = get_mouse_position(event);
                 offset = {
-                            x: coord.x - selected_element.getAttributeNS(null, "x"),
-                            y: coord.y - selected_element.getAttributeNS(null, "y")
-                         };          
+                            x: coord.x - elem.getAttributeNS(null, "x"),
+                            y: coord.y - elem.getAttributeNS(null, "y")
+                         };
             }else if(event.button == 1){
                 target = event.target;
                 var mid = get_rect_mid(target);
@@ -28,35 +76,32 @@ function make_draggable(event){
                 rot = (rot + 90) % 360;
                 target.setAttributeNS(null, "rotation", rot);
                 target.setAttributeNS(null, "transform", `rotate(${rot} ${mid.x} ${mid.y})`);
+                blocks[elem].rotate90();
                 set_message(`${target.getAttributeNS(null, "x")} ${target.getAttributeNS(null, "y")}`);
             }
         }
-        if(selected_element && !(selected_element.getAttributeNS(null, "nontrivial"))){
+        if(elem && !(elem.getAttributeNS(null, "nontrivial"))){
             spawn();
-            selected_element.setAttributeNS(null, "nontrivial", "true");
+            elem.setAttributeNS(null, "nontrivial", "true");
         }
     }
 
     function drag(event){
-        if (selected_element){
+        if (elem){
             event.preventDefault();
             var coord = get_mouse_position(event);
-            var rot = selected_element.getAttributeNS(null, "rotation") || 0;
-            if (rot % 180 == 0){
-                selected_element.setAttributeNS(null, "x", parseInt((coord.x - offset.x + 1)/4)*4);
-                selected_element.setAttributeNS(null, "y", parseInt((coord.y - offset.y + 1)/4)*4);
-            }else{            
-                selected_element.setAttributeNS(null, "x", parseInt((coord.x - offset.x + 1)/4)*4);
-                selected_element.setAttributeNS(null, "y", parseInt((coord.y - offset.y + 1)/4)*4);
-            }
-            var mid = get_rect_mid(selected_element);
-            selected_element.setAttributeNS(null, "transform", `rotate(${rot} ${mid.x} ${mid.y})`);
+            var rot = elem.getAttributeNS(null, "rotation") || 0;
+            elem.setAttributeNS(null, "x", parseInt((coord.x - offset.x + 2)/4)*4);
+            elem.setAttributeNS(null, "y", parseInt((coord.y - offset.y + 2)/4)*4);
+            var mid = get_rect_mid(elem);
+            elem.setAttributeNS(null, "transform", `rotate(${rot} ${mid.x} ${mid.y})`);
 
         }
     }
 
     function end_drag(event){
-        selected_element = false;
+        blocks[elem].move_to(elem.getAttributeNS(null, "x"), elem.getAttributeNS(null, "y"));
+        elem = false;
     }
 
     function get_mouse_position(event){
@@ -97,6 +142,8 @@ function spawn(){
     rect.setAttributeNS(null, "href", "transistor2.svg")
     //rect.setAttributeNS(null, "fill", "#007bff");
     svgbox.appendChild(rect);
+    blocks[rect] = Transistor(top_id);
+    top_id = top_id + 3;
 }
 
 function set_message(message){
@@ -131,4 +178,6 @@ function make_lines(){
 
 }
 
+var top_id = 0;
+const blocks = Map();
 make_lines();
