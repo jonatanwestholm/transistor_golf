@@ -18,14 +18,19 @@ class Transistor{
         this.y = parseInt(y / 4);
     }
 
+    /*
+    */
     get_id2xy(){
         const x = this.x;
         const y = this.y;
         const rot = this.rot;
+        const gate_id = this.gate_id;
+        const source_id = this.source_id;
+        const drain_id = this.drain_id;
 
-        return {this.gate_id:   [G[rot][0], G[rot][1]],
-                this.source_id: [S[rot][0], S[rot][1]],
-                this.drain_id:  [D[rot][0], D[rot][1]]};
+        return {gate_id:   [G[rot][0], G[rot][1]],
+                source_id: [S[rot][0], S[rot][1]],
+                drain_id:  [D[rot][0], D[rot][1]]};
     }
 
     get_clauses(){
@@ -76,8 +81,9 @@ function make_draggable(event){
                 rot = (rot + 90) % 360;
                 target.setAttributeNS(null, "rotation", rot);
                 target.setAttributeNS(null, "transform", `rotate(${rot} ${mid.x} ${mid.y})`);
-                blocks[elem].rotate90();
-                set_message(`${target.getAttributeNS(null, "x")} ${target.getAttributeNS(null, "y")}`);
+                id = target.getAttributeNS(null, "id");
+                blocks[id].rotate90();
+                //set_message(`${target.getAttributeNS(null, "x")} ${target.getAttributeNS(null, "y")}`);
             }
         }
         if(elem && !(elem.getAttributeNS(null, "nontrivial"))){
@@ -100,8 +106,11 @@ function make_draggable(event){
     }
 
     function end_drag(event){
-        blocks[elem].move_to(elem.getAttributeNS(null, "x"), elem.getAttributeNS(null, "y"));
-        elem = false;
+        if (elem){
+            id = elem.getAttributeNS(null, "id");
+            blocks[id].move_to(elem.getAttributeNS(null, "x"), elem.getAttributeNS(null, "y"));
+            elem = false;            
+        }
     }
 
     function get_mouse_position(event){
@@ -140,9 +149,10 @@ function spawn(){
     rect.setAttributeNS(null, "width", 12);
     rect.setAttributeNS(null, "height", 8);
     rect.setAttributeNS(null, "href", "transistor2.svg")
+    rect.setAttributeNS(null, "id", top_id);
     //rect.setAttributeNS(null, "fill", "#007bff");
     svgbox.appendChild(rect);
-    blocks[rect] = Transistor(top_id);
+    blocks[top_id] = new Transistor(top_id);
     top_id = top_id + 3;
 }
 
@@ -175,9 +185,54 @@ function make_lines(){
 
         svgbox.appendChild(line);
     }
-
 }
 
+function get_connected_regions(id2coords, coords2ids){
+    const id2cr = new Map();
+
+    var remaining_ids = [];
+    for (id in id2coords.keys()){
+        remaining_ids.push(id);
+    }
+
+    console.log(id2coords.keys);
+
+    while (remaining_ids.length){
+        const id0 = remaining_ids.pop();
+        id2cr[id0] = [id0];
+        var coords = new Array(id2coords[id0]);
+        var seen = []
+        while (coords.length){
+            const xy = coords.pop();
+            if (seen.includes(xy)){
+                continue;
+            }else{
+                seen.push(xy);
+            }
+            const idsxy = coords2ids[xy];
+            for (idxy in idsxy){
+                if (idxy == id0){
+                    continue;
+                }
+                if (!remaining_ids.includes(idxy)){
+                    continue;
+                }
+                id2cr[id0].push(idsxy);
+                for (coord in id2coords[idsxy]){
+                    coords.push(coord);
+                }
+                remaining_ids.remove(idxy);
+            }
+        }
+    }
+    return id2cr;
+}
+
+
 var top_id = 0;
-const blocks = Map();
+var blocks = new Map();
 make_lines();
+
+//console.log(get_connected_regions({0: [0], 1: [1], 2: [2], 3: [0, 1, 3, 4]}))
+console.log(get_connected_regions({0: [0], 1: [1]}, {0: [0], 1: [1]}));
+
