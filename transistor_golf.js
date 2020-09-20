@@ -1,8 +1,9 @@
 class Transistor{
-    constructor(id){
+    constructor(id, sign){
         this.gate_id = id;
         this.source_id = id + 1;
         this.drain_id = id + 2;
+        this.sign = sign;
         this.x = 0;
         this.y = 0;
         this.rot = 0;
@@ -62,7 +63,7 @@ function make_draggable(event){
     var elem = false;
     var offset;
 
-    spawn();
+    spawn("all");
 
     function start_drag(event){
         event.preventDefault();
@@ -87,7 +88,7 @@ function make_draggable(event){
             }
         }
         if(elem && !(elem.getAttributeNS(null, "nontrivial"))){
-            spawn();
+            spawn(elem.getAttributeNS(null, "class"));
             elem.setAttributeNS(null, "nontrivial", "true");
         }
     }
@@ -135,25 +136,150 @@ function make_draggable(event){
     }
 }
 
-function spawn(){
+function spawn(elem_class){
     const svgbox = document.getElementById("svgbox");
+    /*
+    if(box_num == 1){
+    }else{
+        const svgbox = document.getElementById("svgbox2");        
+    }*/
     //const svgbox = document.getElementById("otherbox");
-
-    const rect = document.createElementNS("http://www.w3.org/2000/svg", "image");
-    //const rect = document.createElement("box");
-    //rect.setAttributeNS(null, "class", "draggable");
-    //rect.setAttributeNS(null, "x", 10);
-    //rect.setAttributeNS(null, "y", 10);
-    //rect.classList.add("transistor");
-    rect.setAttributeNS(null, "class", "draggable transistor");
-    rect.setAttributeNS(null, "width", 12);
-    rect.setAttributeNS(null, "height", 8);
-    rect.setAttributeNS(null, "href", "transistor2.svg")
-    rect.setAttributeNS(null, "id", top_id);
-    //rect.setAttributeNS(null, "fill", "#007bff");
-    svgbox.appendChild(rect);
-    blocks[top_id] = new Transistor(top_id);
-    top_id = top_id + 3;
+    if (elem_class == "draggable transistor" || elem_class == "all"){
+        const rect = document.createElementNS("http://www.w3.org/2000/svg", "image");
+        //const rect = document.createElement("box");
+        //rect.setAttributeNS(null, "class", "draggable");
+        //rect.classList.add("transistor");
+        rect.setAttributeNS(null, "class", "draggable transistor");
+        rect.setAttributeNS(null, "width", 12);
+        rect.setAttributeNS(null, "height", 8);
+        rect.setAttributeNS(null, "x", 0);
+        rect.setAttributeNS(null, "y", 0);
+        rect.setAttributeNS(null, "href", "../data/transistor_pos.svg")
+        rect.setAttributeNS(null, "id", top_id);
+        rect.setAttributeNS(null, "position", "relative");
+        rect.setAttributeNS(null, "z-index", -1);
+        //rect.setAttributeNS(null, "fill", "#007bff");    
+        svgbox.appendChild(rect);
+        blocks[top_id] = new Transistor(top_id, 1);
+        top_id = top_id + 3;
+    }
+    if (elem_class == "draggable neg transistor" || elem_class == "all"){
+        const rect = document.createElementNS("http://www.w3.org/2000/svg", "image");
+        //const rect = document.createElement("box");
+        //rect.setAttributeNS(null, "class", "draggable");
+        //rect.classList.add("transistor");
+        rect.setAttributeNS(null, "class", "draggable neg transistor");
+        rect.setAttributeNS(null, "width", 12);
+        rect.setAttributeNS(null, "height", 8);
+        rect.setAttributeNS(null, "x", 0);
+        rect.setAttributeNS(null, "y", 8);
+        //rect.setAttributeNS(null, "href", "transistor3.svg")
+        rect.setAttributeNS(null, "href", "../data/transistor_neg.svg")
+        rect.setAttributeNS(null, "id", top_id);
+        rect.setAttributeNS(null, "position", "relative");
+        rect.setAttributeNS(null, "z-index", -1);
+        //rect.setAttributeNS(null, "fill", "#007bff");
+        svgbox.appendChild(rect);
+        blocks[top_id] = new Transistor(top_id, -1);
+        top_id = top_id + 3;
+    }
+    if (elem_class == "draggable bar" || elem_class == "all"){
+        const rect = document.createElementNS("http://www.w3.org/2000/svg", "image");
+        //const rect = document.createElement("box");
+        //rect.setAttributeNS(null, "class", "draggable");
+        //rect.classList.add("transistor");
+        rect.setAttributeNS(null, "class", "draggable bar");
+        rect.setAttributeNS(null, "width", 20);
+        rect.setAttributeNS(null, "height", 4);
+        rect.setAttributeNS(null, "x", 0);
+        rect.setAttributeNS(null, "y", 16);
+        //rect.setAttributeNS(null, "href", "transistor3.svg")
+        rect.setAttributeNS(null, "href", "../data/bar.svg")
+        rect.setAttributeNS(null, "id", top_id);
+        rect.setAttributeNS(null, "z-index", 0);
+        //rect.setAttributeNS(null, "fill", "#007bff");
+        svgbox.appendChild(rect);
+        blocks[top_id] = new Transistor(top_id, -1);
+        top_id = top_id + 3;
+    }
+    if (elem_class == "all"){
+        const rect = document.createElementNS("http://www.w3.org/2000/svg", "image");
+        //const rect = document.createElement("box");
+        //rect.setAttributeNS(null, "class", "draggable");
+        //rect.classList.add("transistor");
+        rect.setAttributeNS(null, "class", "draggable vdd");
+        rect.setAttributeNS(null, "width", 4);
+        rect.setAttributeNS(null, "height", 4);
+        rect.setAttributeNS(null, "x", 0);
+        rect.setAttributeNS(null, "y", 20);
+        //rect.setAttributeNS(null, "href", "transistor3.svg")
+        rect.setAttributeNS(null, "href", "../data/vdd.svg")
+        rect.setAttributeNS(null, "id", top_id);
+        rect.setAttributeNS(null, "position", "relative");
+        rect.setAttributeNS(null, "z-index", 1);
+        //rect.setAttributeNS(null, "fill", "#007bff");
+        svgbox.appendChild(rect);
+        blocks[top_id] = new Transistor(top_id, -1);
+        top_id = top_id + 3;
+    }
+    if (elem_class == "all"){
+        const rect = document.createElementNS("http://www.w3.org/2000/svg", "image");
+        //const rect = document.createElement("box");
+        //rect.setAttributeNS(null, "class", "draggable");
+        //rect.classList.add("transistor");
+        rect.setAttributeNS(null, "class", "draggable gnd");
+        rect.setAttributeNS(null, "width", 4);
+        rect.setAttributeNS(null, "height", 4);
+        rect.setAttributeNS(null, "x", 0);
+        rect.setAttributeNS(null, "y", 24);
+        //rect.setAttributeNS(null, "href", "transistor3.svg")
+        rect.setAttributeNS(null, "href", "../data/gnd.svg")
+        rect.setAttributeNS(null, "id", top_id);
+        rect.setAttributeNS(null, "z-index", 1);
+        //rect.setAttributeNS(null, "fill", "#007bff");
+        svgbox.appendChild(rect);
+        blocks[top_id] = new Transistor(top_id, -1);
+        top_id = top_id + 3;
+    }
+    if (elem_class == "all"){
+        const rect = document.createElementNS("http://www.w3.org/2000/svg", "image");
+        //const rect = document.createElement("box");
+        //rect.setAttributeNS(null, "class", "draggable");
+        //rect.classList.add("transistor");
+        rect.setAttributeNS(null, "class", "draggable x");
+        rect.setAttributeNS(null, "width", 4);
+        rect.setAttributeNS(null, "height", 4);
+        rect.setAttributeNS(null, "x", 0);
+        rect.setAttributeNS(null, "y", 28);
+        //rect.setAttributeNS(null, "href", "transistor3.svg")
+        rect.setAttributeNS(null, "href", "../data/x1.svg")
+        rect.setAttributeNS(null, "id", top_id);
+        rect.setAttributeNS(null, "z-index", 1);
+        //rect.setAttributeNS(null, "fill", "#007bff");
+        svgbox.appendChild(rect);
+        blocks[top_id] = new Transistor(top_id, -1);
+        top_id = top_id + 3;
+    }
+    if (elem_class == "all"){
+        const rect = document.createElementNS("http://www.w3.org/2000/svg", "image");
+        //const rect = document.createElement("box");
+        //rect.setAttributeNS(null, "class", "draggable");
+        //rect.classList.add("transistor");
+        rect.setAttributeNS(null, "class", "draggable t");
+        rect.setAttributeNS(null, "width", 4);
+        rect.setAttributeNS(null, "height", 4);
+        rect.setAttributeNS(null, "x", 0);
+        rect.setAttributeNS(null, "y", 32);
+        //rect.setAttributeNS(null, "href", "transistor3.svg")
+        rect.setAttributeNS(null, "href", "../data/t.svg")
+        rect.setAttributeNS(null, "id", top_id);
+        rect.setAttributeNS(null, "position", "relative");
+        rect.setAttributeNS(null, "z-index", 1);        
+        //rect.setAttributeNS(null, "fill", "#007bff");
+        svgbox.appendChild(rect);
+        blocks[top_id] = new Transistor(top_id, -1);
+        top_id = top_id + 3;
+    }
 }
 
 function set_message(message){
