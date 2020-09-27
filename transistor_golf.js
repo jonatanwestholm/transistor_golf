@@ -1,14 +1,4 @@
-class Transistor{
-    constructor(id, sign){
-        this.gate_id = id;
-        this.source_id = id + 1;
-        this.drain_id = id + 2;
-        this.sign = sign;
-        this.x = 0;
-        this.y = 0;
-        this.rot = 0;
-    }
-
+class Component{
     rotate90(){
         //rotation by 90 degrees
         this.rot = (this.rot + 1) % 4;
@@ -18,9 +8,78 @@ class Transistor{
         this.x = parseInt(x / 4);
         this.y = parseInt(y / 4);
     }
+}
+
+class Bar extends Component{
+    constructor(id){
+        super();
+        this.id = id;
+        this.rot = 0;
+        this.length = 5;
+        this.x = 0;
+        this.y = 4;
+    }
+
+    get_json_data(){
+        return ["bar", 
+               [this.x, this.y], 
+               this.rot, 
+               this.length];
+    }
+
+}
+
+class Node extends Component{
+    constructor(id, type_name){
+        super();
+        this.id = id;
+        this.type_name = type_name;
+        this.rot = 0;
+        this.x = 0;
+        if(type_name == "supply"){
+            this.y = 4;
+        }else if(type_name == "ground"){
+            this.y = 5;
+        }else if(type_name == "input"){
+            this.y = 6;
+        }else if(type_name == "output"){
+            this.y = 7;
+        }
+    }
+
+    get_json_data(){
+        return [this.type_name,
+               [this.x, this.y]];
+    }
+}
+
+class Transistor extends Component{
+    constructor(id, sign){
+        super();
+        this.id = id;
+        this.sign = sign;
+        this.rot = 0;
+        if(sign > 0){
+            this.x = 0;
+            this.y = 0;            
+        }else{
+            this.x = 0;
+            this.y = 2;
+        }
+    }
+
+    get_json_data(){
+        const rot = this.rot;
+        const x = this.x;
+        const y = this.y;
+        return ["transistor", 
+                [x + G[rot][0], y + G[rot][1]], 
+                [x + S[rot][0], y + S[rot][1]], 
+                [x + D[rot][0], y + D[rot][1]], 
+                this.sign];
+    }
 
     /*
-    */
     get_id2xy(){
         const x = this.x;
         const y = this.y;
@@ -35,17 +94,10 @@ class Transistor{
     }
 
     get_clauses(){
-        return [[-this.gate_id, this.source_id, -this.drain_id], 
-                [-this.gate_id, -this.source_id, this.drain_id]];
-    }
-
-    /* P-channel version, or whatever it's called
-    get_clauses(){
-        return [[this.gate_id, this.source_id, -this.drain_id], 
-                [this.gate_id, -this.source_id, this.drain_id]];
+        return [[-this.sign * this.gate_id, this.source_id, -this.drain_id], 
+                [-this.sign * this.gate_id, -this.source_id, this.drain_id]];
     }
     */
-
 }
 
 const G = [[1, 0], [-1, 1], [-2, -1], [0, -2]];
@@ -161,7 +213,7 @@ function spawn(elem_class){
         //rect.setAttributeNS(null, "fill", "#007bff");    
         svgbox.appendChild(rect);
         blocks[top_id] = new Transistor(top_id, 1);
-        top_id = top_id + 3;
+        top_id = top_id + 1;
     }
     if (elem_class == "draggable neg transistor" || elem_class == "all"){
         const rect = document.createElementNS("http://www.w3.org/2000/svg", "image");
@@ -181,7 +233,7 @@ function spawn(elem_class){
         //rect.setAttributeNS(null, "fill", "#007bff");
         svgbox.appendChild(rect);
         blocks[top_id] = new Transistor(top_id, -1);
-        top_id = top_id + 3;
+        top_id = top_id + 1;
     }
     if (elem_class == "draggable bar" || elem_class == "all"){
         const rect = document.createElementNS("http://www.w3.org/2000/svg", "image");
@@ -199,8 +251,8 @@ function spawn(elem_class){
         rect.setAttributeNS(null, "z-index", 0);
         //rect.setAttributeNS(null, "fill", "#007bff");
         svgbox.appendChild(rect);
-        blocks[top_id] = new Transistor(top_id, -1);
-        top_id = top_id + 3;
+        blocks[top_id] = new Bar(top_id);
+        top_id = top_id + 1;
     }
     if (elem_class == "all"){
         const rect = document.createElementNS("http://www.w3.org/2000/svg", "image");
@@ -219,8 +271,8 @@ function spawn(elem_class){
         rect.setAttributeNS(null, "z-index", 1);
         //rect.setAttributeNS(null, "fill", "#007bff");
         svgbox.appendChild(rect);
-        blocks[top_id] = new Transistor(top_id, -1);
-        top_id = top_id + 3;
+        blocks[top_id] = new Node(top_id, "supply");
+        top_id = top_id + 1;
     }
     if (elem_class == "all"){
         const rect = document.createElementNS("http://www.w3.org/2000/svg", "image");
@@ -238,10 +290,15 @@ function spawn(elem_class){
         rect.setAttributeNS(null, "z-index", 1);
         //rect.setAttributeNS(null, "fill", "#007bff");
         svgbox.appendChild(rect);
-        blocks[top_id] = new Transistor(top_id, -1);
-        top_id = top_id + 3;
+        blocks[top_id] = new Node(top_id, "ground");
+        top_id = top_id + 1;
     }
-    if (elem_class == "all"){
+    if (elem_class == "draggable x" || elem_class == "all"){
+        if(num_x > 1){
+            return;
+        }else{
+            num_x += 1;
+        }
         const rect = document.createElementNS("http://www.w3.org/2000/svg", "image");
         //const rect = document.createElement("box");
         //rect.setAttributeNS(null, "class", "draggable");
@@ -257,8 +314,8 @@ function spawn(elem_class){
         rect.setAttributeNS(null, "z-index", 1);
         //rect.setAttributeNS(null, "fill", "#007bff");
         svgbox.appendChild(rect);
-        blocks[top_id] = new Transistor(top_id, -1);
-        top_id = top_id + 3;
+        blocks[top_id] = new Node(top_id, "input");
+        top_id = top_id + 1;
     }
     if (elem_class == "all"){
         const rect = document.createElementNS("http://www.w3.org/2000/svg", "image");
@@ -277,9 +334,52 @@ function spawn(elem_class){
         rect.setAttributeNS(null, "z-index", 1);        
         //rect.setAttributeNS(null, "fill", "#007bff");
         svgbox.appendChild(rect);
-        blocks[top_id] = new Transistor(top_id, -1);
-        top_id = top_id + 3;
+        blocks[top_id] = new Node(top_id, "output");
+        top_id = top_id + 1;
     }
+}
+
+
+function parse_response(response){
+    //json = JSON.parse(response);
+    set_message(response);
+}
+
+function httpPostAsync(url, callback, json_data)
+{
+    var xhr = new XMLHttpRequest();
+    /*
+    xmlHttp.onreadystatechange = function() { 
+        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+            parse_response(xmlHttp.responseText);
+    }
+    xmlHttp.open("POST", url, false); // false for synchronous 
+    xmlHttp.send(null);
+    */
+    xhr.onreadystatechange = function() { 
+        if (xhr.readyState == 4 && xhr.status == 200)
+            callback(xhr.responseText);
+    }
+
+    xhr.open("POST", url, false);
+    xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+
+    // send the collected data as JSON
+    xhr.send(JSON.stringify(json_data));
+}
+
+function evaluate_circuit(){
+    //json_data = JSON.parse('{"text": "hello from json"}');
+    var json_data = {};
+    for (id in blocks){
+        //console.log(blocks[id].id);
+        json_data[id] = blocks[id].get_json_data();
+    }
+
+    //console.log(json_data);
+    //set_message("created json...");    
+    httpPostAsync('http://127.0.0.1:5000/ec', parse_response, json_data);
+    //set_message("sent json");
 }
 
 function set_message(message){
@@ -313,6 +413,7 @@ function make_lines(){
     }
 }
 
+/*
 function get_connected_regions(id2coords, coords2ids){
     const id2cr = new Map();
 
@@ -353,12 +454,13 @@ function get_connected_regions(id2coords, coords2ids){
     }
     return id2cr;
 }
-
+*/
 
 var top_id = 0;
+var num_x = 0;
 var blocks = new Map();
 make_lines();
 
 //console.log(get_connected_regions({0: [0], 1: [1], 2: [2], 3: [0, 1, 3, 4]}))
-console.log(get_connected_regions({0: [0], 1: [1]}, {0: [0], 1: [1]}));
+//console.log(get_connected_regions({0: [0], 1: [1]}, {0: [0], 1: [1]}));
 
