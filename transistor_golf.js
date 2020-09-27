@@ -2,6 +2,7 @@ class Component{
     rotate90(){
         //rotation by 90 degrees
         this.rot = (this.rot + 1) % 4;
+        this.x = this.x + 4;
     }
 
     move_to(x, y){
@@ -133,7 +134,7 @@ function make_draggable(event){
                 var rot = parseInt(target.getAttributeNS(null, "rotation")) || 0;
                 rot = (rot + 90) % 360;
                 target.setAttributeNS(null, "rotation", rot);
-                target.setAttributeNS(null, "transform", `rotate(${rot} ${mid.x} ${mid.y})`);
+                target.setAttributeNS(null, "transform", `rotate(${rot} ${mid.x + 2} ${mid.y + 2})`);
                 id = target.getAttributeNS(null, "id");
                 blocks[id].rotate90();
                 //set_message(`${target.getAttributeNS(null, "x")} ${target.getAttributeNS(null, "y")}`);
