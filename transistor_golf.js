@@ -45,6 +45,8 @@ class Node extends Component{
             this.y = 6;
         }else if(type_name == "output"){
             this.y = 7;
+        }else if(type_name == "isolator"){
+            this.y = 8;
         }
     }
 
@@ -336,6 +338,26 @@ function spawn(elem_class){
         //rect.setAttributeNS(null, "fill", "#007bff");
         svgbox.appendChild(rect);
         blocks[top_id] = new Node(top_id, "output");
+        top_id = top_id + 1;
+    }
+    if (elem_class == "draggable isolator" || elem_class == "all"){
+        const rect = document.createElementNS("http://www.w3.org/2000/svg", "image");
+        //const rect = document.createElement("box");
+        //rect.setAttributeNS(null, "class", "draggable");
+        //rect.classList.add("transistor");
+        rect.setAttributeNS(null, "class", "draggable isolator");
+        rect.setAttributeNS(null, "width", 4);
+        rect.setAttributeNS(null, "height", 4);
+        rect.setAttributeNS(null, "x", 0);
+        rect.setAttributeNS(null, "y", 36);
+        //rect.setAttributeNS(null, "href", "transistor3.svg")
+        rect.setAttributeNS(null, "href", "../data/b.svg")
+        rect.setAttributeNS(null, "id", top_id);
+        rect.setAttributeNS(null, "position", "relative");
+        rect.setAttributeNS(null, "z-index", 1);        
+        //rect.setAttributeNS(null, "fill", "#007bff");
+        svgbox.appendChild(rect);
+        blocks[top_id] = new Node(top_id, "isolator");
         top_id = top_id + 1;
     }
 }

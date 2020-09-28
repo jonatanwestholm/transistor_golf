@@ -43,7 +43,7 @@ def get_covered_points(bar):
         #return [tuple(np.array(bar.pos) + i * np.array(diff)) for i in range(bar.length)]
 
 
-def get_connected_components(bars):
+def get_connected_components(bars, isolators):
     if not bars:
         return 
 
@@ -63,6 +63,12 @@ def get_connected_components(bars):
         for coord in coords:
             G.add_edge(comp, coord)
 
+    for isolator in isolators:
+        try:
+            G.remove_node(isolator.pos)
+        except nx.NetworkXError:
+            print("node", isolator.pos, "not in G")
+
     #bar_ex = next(iter(bars))
     coord_ex = next(iter(coords))
     for cc in nx.connected_components(G):
@@ -70,8 +76,8 @@ def get_connected_components(bars):
         yield [c for c in cc if type(c) == type(coord_ex)]
 
 
-def get_coord_dict(bars):
-    ccs = get_connected_components(bars)
+def get_coord_dict(bars, isolators):
+    ccs = get_connected_components(bars, isolators)
     coord_dict = {}
     for cc in ccs:
         for c in cc:
@@ -85,38 +91,16 @@ def get_transistor_clauses(gate, source, drain, trans_sign):
     return [[-trans_sign * gate, source, -drain], [-trans_sign * gate, -source, drain]]
 
 
-def get_NOT_GATE(solver):
-    bars = [Bar((0, 0), 1, 5),
-            Bar((0, 1), 0, 5),
-            Bar((0, 3), 0, 5)
-        ]
-
-    supplys = [Node("VDD", (5, 0), solver.var())]
-    grounds = [Node("GND", (5, 4), solver.var())]
-    inputs  = [Node("X", (0, 2), solver.var())]
-    outputs = [Node("T", (5, 2), solver.var())]
-
-    transistors = [[Node("POS_G", (4, 1), solver.var()), 
-                    Node("POS_S", (5, 2), solver.var()),
-                    Node("POS_D", (5, 0), solver.var()), -1],
-                   [Node("NEG_G", (4, 3), solver.var()), 
-                    Node("NEG_S", (5, 4), solver.var()),
-                    Node("NEG_D", (5, 2), solver.var()), 1],
-                ]
-
-    return bars, supplys, grounds, inputs, outputs, transistors
-
-
 def evaluate_circuit(components_json):
     #print("num threads:", threading.active_count())
     #print("current thread:", threading.current_thread())
     #print("main thread:", threading.main_thread())
     solver = SugarRush()
-    bars, supplys, grounds, inputs, outputs, transistors = parse_components(components_json, solver)
+    bars, isolators, supplys, grounds, inputs, outputs, transistors = parse_components(components_json, solver)
 
     all_vars = supplys + grounds + inputs + outputs + [node for trans in transistors for node in trans[:-1]]
     #print(all_vars)
-    coord_dict = get_coord_dict(bars)
+    coord_dict = get_coord_dict(bars, isolators)
     print(coord_dict)
 
     def default_map(c):
@@ -193,6 +177,7 @@ def parse_components(components_raw, solver):
     inputs = []
     outputs = []
     transistors = []
+    isolators = []
 
     for c in components_raw.values():
         if c[0] == "bar":
@@ -205,6 +190,8 @@ def parse_components(components_raw, solver):
             inputs.append(Node("X", tuple(c[1]), solver.var()))
         elif c[0] == "output":
             outputs.append(Node("T", tuple(c[1]), solver.var()))
+        elif c[0] == "isolator":
+            isolators.append(Node("B", tuple(c[1]), solver.var()))
         elif c[0] == "transistor":
             idstr = str(len(transistors))
             transistors.append([Node("Gate" + idstr, tuple(c[1]), solver.var()),
@@ -212,7 +199,30 @@ def parse_components(components_raw, solver):
                                 Node("Drain" + idstr, tuple(c[3]), solver.var()),
                                 c[4]])
 
-    return bars, supplys, grounds, inputs, outputs, transistors
+    return bars, isolators, supplys, grounds, inputs, outputs, transistors
+
+
+def get_NOT_GATE(solver):
+    bars = [Bar((0, 0), 1, 5),
+            Bar((0, 1), 0, 5),
+            Bar((0, 3), 0, 5)
+        ]
+
+    supplys = [Node("VDD", (5, 0), solver.var())]
+    grounds = [Node("GND", (5, 4), solver.var())]
+    inputs  = [Node("X", (0, 2), solver.var())]
+    outputs = [Node("T", (5, 2), solver.var())]
+    isolators = []
+
+    transistors = [[Node("POS_G", (4, 1), solver.var()), 
+                    Node("POS_S", (5, 2), solver.var()),
+                    Node("POS_D", (5, 0), solver.var()), -1],
+                   [Node("NEG_G", (4, 3), solver.var()), 
+                    Node("NEG_S", (5, 4), solver.var()),
+                    Node("NEG_D", (5, 2), solver.var()), 1],
+                ]
+
+    return bars, isolators, supplys, grounds, inputs, outputs, transistors
 
 
 def main():
