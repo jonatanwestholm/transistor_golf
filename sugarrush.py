@@ -20,9 +20,6 @@ from pysat.solvers import Solver
 from pysat.card import CardEnc, EncType, ITotalizer
 from pysat.formula import CNF
 
-from sugarrush.utils import flatten_simple as flatten
-from sugarrush.utils import dbg
-
 
 class SugarRush(Solver):
     """
@@ -362,3 +359,7 @@ class SugarRush(Solver):
             dbg("", debug)
         self.solve(assumptions=[-itot[upper]])
         return upper
+
+
+def flatten(s):
+    return [elem for sublist in s for elem in sublist]

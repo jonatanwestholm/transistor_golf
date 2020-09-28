@@ -1,0 +1,5 @@
+Flask==1.1.1
+Numpy==1.18.2
+networkx==2.5
+python-sat
+google-cloud-storage
