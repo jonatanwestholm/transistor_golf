@@ -205,14 +205,15 @@ function spawn(elem_class){
         //rect.setAttributeNS(null, "class", "draggable");
         //rect.classList.add("transistor");
         rect.setAttributeNS(null, "class", "draggable transistor");
+        rect.setAttributeNS(null, "title", "positive");
         rect.setAttributeNS(null, "width", 12);
         rect.setAttributeNS(null, "height", 8);
         rect.setAttributeNS(null, "x", 0);
         rect.setAttributeNS(null, "y", 0);
         rect.setAttributeNS(null, "href", "../data/transistor_pos.svg")
         rect.setAttributeNS(null, "id", top_id);
-        rect.setAttributeNS(null, "position", "relative");
-        rect.setAttributeNS(null, "z-index", -1);
+        //rect.setAttributeNS(null, "position", "relative");
+        //rect.setAttributeNS(null, "z-index", -1);
         //rect.setAttributeNS(null, "fill", "#007bff");    
         svgbox.appendChild(rect);
         blocks[top_id] = new Transistor(top_id, 1);
@@ -307,6 +308,7 @@ function spawn(elem_class){
         //rect.setAttributeNS(null, "class", "draggable");
         //rect.classList.add("transistor");
         rect.setAttributeNS(null, "class", "draggable x");
+        rect.setAttributeNS(null, "title", "x1");
         rect.setAttributeNS(null, "width", 4);
         rect.setAttributeNS(null, "height", 4);
         rect.setAttributeNS(null, "x", 0);

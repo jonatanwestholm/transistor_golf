@@ -5,7 +5,7 @@ from collections import defaultdict, namedtuple
 import numpy as np
 import networkx as nx
 
-from sugarrush.solver import SugarRush
+from sugarrush import SugarRush
 
 Bar = namedtuple("Bar", ["pos", "rot", "length"])
 #Transistor = namedtuple("Transistor", ["comp_type", "pos", "rot", "var"])
