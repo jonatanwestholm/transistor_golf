@@ -365,11 +365,6 @@ function spawn(elem_class){
 }
 
 
-function parse_response(response){
-    //json = JSON.parse(response);
-    set_message(response);
-}
-
 function httpPostAsync(url, callback, json_data)
 {
     var xhr = new XMLHttpRequest();
@@ -404,7 +399,19 @@ function evaluate_circuit(){
     //console.log(json_data);
     //set_message("created json...");    
     httpPostAsync('http://127.0.0.1:5000/ec', parse_response, json_data);
+    //httpPostAsync('https://transistor-golf.ew.r.appspot.com/ec', parse_response, json_data);
     //set_message("sent json");
+}
+
+function parse_response(response){
+    response = JSON.parse(response);
+    var resp;
+    var message = "Feasible assignments:\n";
+    for(id in response){
+        resp = response[id];
+        message += `x: ${resp['x']} t: ${resp['t']}\n`;
+    }
+    set_message(message);
 }
 
 function set_message(message){

@@ -135,6 +135,7 @@ def evaluate_circuit(components_json):
 
     x_lits = [inp.var for inp in inputs]
     t_lits = [outp.var for outp in outputs]
+    feasible_assignments = []
 
     #for lits in [[x_lits[0], -t_lits[0]]]:
     #for lits in [[]]:
@@ -144,10 +145,21 @@ def evaluate_circuit(components_json):
                 ", t:", " ".join([str(solver.solution_value(t_lit)) for t_lit in t_lits]))
             #for cc in ccs:
             #    print(*[solver.solution_value(c.var) for c in cc])
+            feasible_assignments.append(lits)
         #else:
         #    print("assumption failed:", x_sign)
     '''
     '''
+    return make_response_dict(feasible_assignments, len(x_lits))
+
+
+def make_response_dict(feasible_assignments, k):
+    resp = {}
+    for idx, assignment in enumerate(feasible_assignments):
+        resp[idx] = {"x": [(a > 0) * 1 for a in assignment[:k]],
+                     "t": [(a > 0) * 1 for a in assignment[k:]]}
+    return resp
+
 
 def power_set(a):
     """
@@ -223,68 +235,3 @@ def get_NOT_GATE(solver):
                 ]
 
     return bars, isolators, supplys, grounds, inputs, outputs, transistors
-
-
-def main():
-    solver = SugarRush()
-
-    '''
-    bars = [Bar("Bar", (0, 0), 0, 5, solver.var()),
-            Bar("Bar", (4, 0), 0, 5, solver.var()),
-            Bar("Bar", (7, 0), 1, 5, solver.var()),
-            Bar("Bar", (7, 5), 0, 5, solver.var())
-        ]
-    supplys = [Node("Node", (0, 0), "supply", solver.var())]
-    grounds = [Node("Node", (8, 5), "ground", solver.var())]
-    inputs  = [Node("Node", (7, 0), "input", solver.var())]
-    outputs = []
-    transistors = []
-    '''
-    bars, supplys, grounds, inputs, outputs, transistors = get_NOT_GATE(solver)
-
-    all_vars = supplys + grounds + inputs + outputs + [node for trans in transistors for node in trans[:-1]]
-    #print(all_vars)
-    coord_dict = get_coord_dict(bars)
-    #print(coord_dict)
-
-    def default_map(c):
-        if c.pos in coord_dict:
-            return coord_dict[c.pos]
-        else:
-            return c.pos
-
-    ccs = []
-    for _, cc in groupby(sorted(all_vars, key=default_map), key=default_map):
-        cc = list(cc)
-        all_on = [[c.var] for c in cc]
-        all_off = [[-c.var] for c in cc]
-        #print(all_on, all_off)
-        solver.add(solver.disjunction([all_on, all_off]))
-        print(", ".join([c.name for c in cc]))
-        ccs.append(cc)
-
-    for supply in supplys:
-        solver.add([supply.var])
-
-    for ground in grounds:
-        solver.add([-ground.var])
-
-    for gate, source, drain, trans_sign in transistors:
-        solver.add(get_transistor_clauses(gate.var, source.var, drain.var, trans_sign))
-
-    x_lit = inputs[0].var
-    t_lit = outputs[0].var
-
-    for x_sign in [-1, 1]:
-        if solver.solve(assumptions=[x_sign * x_lit]):
-            print("x:", solver.solution_value(x_lit), ", t:", solver.solution_value(t_lit))
-            for cc in ccs:
-                print(*[solver.solution_value(c.var) for c in cc])
-        else:
-            print("assumption failed:", x_sign)
-    '''
-    '''
-
-
-if __name__ == '__main__':
-    main()

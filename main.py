@@ -14,7 +14,7 @@ def main():
 @app.route("/ec", methods=["GET", "POST"])
 def evaluate_circuit():
     resp = circuit.evaluate_circuit(request.json)
-    return ""
+    return resp
 
 @app.route("/transistor_golf.js", methods=["GET"])
 def tgolf():
