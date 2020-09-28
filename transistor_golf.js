@@ -398,8 +398,8 @@ function evaluate_circuit(){
 
     //console.log(json_data);
     //set_message("created json...");    
-    httpPostAsync('http://127.0.0.1:5000/ec', parse_response, json_data);
-    //httpPostAsync('https://transistor-golf.ew.r.appspot.com/ec', parse_response, json_data);
+    //httpPostAsync('http://127.0.0.1:5000/ec', parse_response, json_data);
+    httpPostAsync('https://transistor-golf.ew.r.appspot.com/ec', parse_response, json_data);
     //set_message("sent json");
 }
 
