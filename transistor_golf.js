@@ -210,7 +210,7 @@ function spawn(elem_class){
         rect.setAttributeNS(null, "height", 8);
         rect.setAttributeNS(null, "x", 0);
         rect.setAttributeNS(null, "y", 0);
-        rect.setAttributeNS(null, "href", "../data/transistor_pos.svg")
+        rect.setAttributeNS(null, "href", "sprites/transistor_pos.svg")
         rect.setAttributeNS(null, "id", top_id);
         //rect.setAttributeNS(null, "position", "relative");
         //rect.setAttributeNS(null, "z-index", -1);
@@ -230,7 +230,7 @@ function spawn(elem_class){
         rect.setAttributeNS(null, "x", 0);
         rect.setAttributeNS(null, "y", 8);
         //rect.setAttributeNS(null, "href", "transistor3.svg")
-        rect.setAttributeNS(null, "href", "../data/transistor_neg.svg")
+        rect.setAttributeNS(null, "href", "sprites/transistor_neg.svg")
         rect.setAttributeNS(null, "id", top_id);
         rect.setAttributeNS(null, "position", "relative");
         rect.setAttributeNS(null, "z-index", -1);
@@ -250,7 +250,7 @@ function spawn(elem_class){
         rect.setAttributeNS(null, "x", 0);
         rect.setAttributeNS(null, "y", 16);
         //rect.setAttributeNS(null, "href", "transistor3.svg")
-        rect.setAttributeNS(null, "href", "../data/bar.svg")
+        rect.setAttributeNS(null, "href", "sprites/bar.svg")
         rect.setAttributeNS(null, "id", top_id);
         rect.setAttributeNS(null, "z-index", 0);
         //rect.setAttributeNS(null, "fill", "#007bff");
@@ -269,7 +269,7 @@ function spawn(elem_class){
         rect.setAttributeNS(null, "x", 0);
         rect.setAttributeNS(null, "y", 20);
         //rect.setAttributeNS(null, "href", "transistor3.svg")
-        rect.setAttributeNS(null, "href", "../data/vdd.svg")
+        rect.setAttributeNS(null, "href", "sprites/vdd.svg")
         rect.setAttributeNS(null, "id", top_id);
         rect.setAttributeNS(null, "position", "relative");
         rect.setAttributeNS(null, "z-index", 1);
@@ -289,7 +289,7 @@ function spawn(elem_class){
         rect.setAttributeNS(null, "x", 0);
         rect.setAttributeNS(null, "y", 24);
         //rect.setAttributeNS(null, "href", "transistor3.svg")
-        rect.setAttributeNS(null, "href", "../data/gnd.svg")
+        rect.setAttributeNS(null, "href", "sprites/gnd.svg")
         rect.setAttributeNS(null, "id", top_id);
         rect.setAttributeNS(null, "z-index", 1);
         //rect.setAttributeNS(null, "fill", "#007bff");
@@ -314,7 +314,7 @@ function spawn(elem_class){
         rect.setAttributeNS(null, "x", 0);
         rect.setAttributeNS(null, "y", 28);
         //rect.setAttributeNS(null, "href", "transistor3.svg")
-        rect.setAttributeNS(null, "href", "../data/x1.svg")
+        rect.setAttributeNS(null, "href", "sprites/x1.svg")
         rect.setAttributeNS(null, "id", top_id);
         rect.setAttributeNS(null, "z-index", 1);
         //rect.setAttributeNS(null, "fill", "#007bff");
@@ -333,7 +333,7 @@ function spawn(elem_class){
         rect.setAttributeNS(null, "x", 0);
         rect.setAttributeNS(null, "y", 32);
         //rect.setAttributeNS(null, "href", "transistor3.svg")
-        rect.setAttributeNS(null, "href", "../data/t.svg")
+        rect.setAttributeNS(null, "href", "sprites/t.svg")
         rect.setAttributeNS(null, "id", top_id);
         rect.setAttributeNS(null, "position", "relative");
         rect.setAttributeNS(null, "z-index", 1);        
@@ -353,7 +353,7 @@ function spawn(elem_class){
         rect.setAttributeNS(null, "x", 0);
         rect.setAttributeNS(null, "y", 36);
         //rect.setAttributeNS(null, "href", "transistor3.svg")
-        rect.setAttributeNS(null, "href", "../data/b.svg")
+        rect.setAttributeNS(null, "href", "sprites/b.svg")
         rect.setAttributeNS(null, "id", top_id);
         rect.setAttributeNS(null, "position", "relative");
         rect.setAttributeNS(null, "z-index", 1);        
