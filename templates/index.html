@@ -24,7 +24,7 @@
         <form>
             <button type="button" onclick="evaluate_circuit()">Evaluate circuit</button>
         </form>
-        <textarea id="message" rows="4" cols="50"></textarea>        
+        <textarea id="message" rows="4" cols="50"></textarea>
     </div>
     <script src="transistor_golf.js"></script>
     <!--
@@ -46,5 +46,12 @@
         then they have the same voltage (high or low). To get started, 
         you can implement the circuit described <a href="https://electronics.stackexchange.com/questions/167250/implementation-of-a-not-gate-with-two-transistors-why-not-one">here</a> 
     </p>
+    <form>
+        <p>Server:</p>
+        <input type="radio" id="standard" name="server" value="standard" checked>
+        <label for="standard">standard</label><br>
+        <input type="radio" id="dev" name="server" value="dev">
+        <label for="dev">dev</label><br>
+    </form>
 </body>
 </html>

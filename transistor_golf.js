@@ -399,8 +399,25 @@ function evaluate_circuit(){
     //console.log(json_data);
     //set_message("created json...");    
     //httpPostAsync('http://127.0.0.1:5000/ec', parse_response, json_data);
-    httpPostAsync('https://transistor-golf.ew.r.appspot.com/ec', parse_response, json_data);
+    httpPostAsync(get_address() + '/ec', parse_response, json_data);
     //set_message("sent json");
+}
+
+function get_address(){
+    var radios = document.getElementsByName("server");
+    var server_type;
+    for (i in radios) {
+      if (radios[i].checked) {
+        server_type = radios[i].value;
+        break;
+      }
+    }
+
+    if(server_type == "standard"){
+        return 'https://transistor-golf.ew.r.appspot.com/';
+    }else if (server_type == "dev"){
+        return 'http://127.0.0.1:5000/';
+    }
 }
 
 function parse_response(response){
