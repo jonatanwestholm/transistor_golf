@@ -259,7 +259,7 @@ function spawn(elem_class){
         blocks[top_id] = new Bar(top_id);
         top_id = top_id + 1;
     }
-    if (elem_class == "all"){
+    if (elem_class == "draggable vdd" || elem_class == "all"){
         const rect = document.createElementNS("http://www.w3.org/2000/svg", "image");
         //const rect = document.createElement("box");
         //rect.setAttributeNS(null, "class", "draggable");
@@ -279,7 +279,7 @@ function spawn(elem_class){
         blocks[top_id] = new Node(top_id, "supply");
         top_id = top_id + 1;
     }
-    if (elem_class == "all"){
+    if (elem_class == "draggable gnd" || elem_class == "all"){
         const rect = document.createElementNS("http://www.w3.org/2000/svg", "image");
         //const rect = document.createElement("box");
         //rect.setAttributeNS(null, "class", "draggable");
@@ -318,7 +318,7 @@ function spawn(elem_class){
         blocks[top_id] = new Node(top_id, "input");
         top_id = top_id + 1;
     }
-    if (elem_class == "all"){
+    if (elem_class == "draggable t" || elem_class == "all"){
         const rect = document.createElementNS("http://www.w3.org/2000/svg", "image");
         //const rect = document.createElement("box");
         //rect.setAttributeNS(null, "class", "draggable");
