@@ -389,6 +389,7 @@ function httpPostAsync(url, callback, json_data)
 }
 
 function evaluate_circuit(){
+    set_message("evaluating circuit...");
     //json_data = JSON.parse('{"text": "hello from json"}');
     var json_data = {};
     for (id in blocks){
