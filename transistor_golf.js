@@ -8,6 +8,7 @@ class Component{
     move_to(x, y){
         this.x = parseInt(x / 4);
         this.y = parseInt(y / 4);
+        this.moved = true;
     }
 }
 
@@ -394,7 +395,9 @@ function evaluate_circuit(){
     var json_data = {};
     for (id in blocks){
         //console.log(blocks[id].id);
-        json_data[id] = blocks[id].get_json_data();
+        if(blocks[id].moved || 0){
+            json_data[id] = blocks[id].get_json_data();
+        }
     }
 
     //console.log(json_data);
