@@ -472,19 +472,31 @@ function make_lines(){
 
 function highlight_connected_region(x, y){
     //highlight_tiles([{x: 10, y: 10}, {x: 10, y: 11}]);
-    highlight_tiles([{"x": x, "y": y}]);
+    //highlight_tiles([{"x": x, "y": y}]);
     //set_message("highlighted");
+    var json_data = {};
+    for (id in blocks){
+        if(blocks[id].moved || 0){
+            json_data[id] = blocks[id].get_json_data();
+        }
+    }
+    json_data["tile"] = {"x": x, "y": y};
+
+    httpPostAsync(get_address() + '/hcr', highlight_tiles, json_data);
 }
 
 function highlight_tiles(tiles){
     flush_highlighted();
+    tiles = JSON.parse(tiles);
+    //set_message(tiles);
     const svgbox = document.getElementById("svgbox");
     for (idx in tiles){
         const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-        console.log(tiles[idx].x);
-        console.log(tiles[idx].y);
-        rect.setAttributeNS(null, "x", tiles[idx].x * 4);
-        rect.setAttributeNS(null, "y", tiles[idx].y * 4);
+        //console.log(tiles[idx]);
+        //console.log(tiles[idx]["x"]);
+        //console.log(tiles[idx]["y"]);
+        rect.setAttributeNS(null, "x", tiles[idx]["x"] * 4);
+        rect.setAttributeNS(null, "y", tiles[idx]["y"] * 4);
         rect.setAttributeNS(null, "width", 4);
         rect.setAttributeNS(null, "height", 4);
         rect.setAttributeNS(null, "fill", "yellow");

@@ -16,6 +16,11 @@ def evaluate_circuit():
     resp = circuit.evaluate_circuit(request.json)
     return resp
 
+@app.route("/hcr", methods=["GET", "POST"])
+def highlight_connected_region():
+    resp = circuit.get_connected_region(request.json)
+    return resp
+
 @app.route("/transistor_golf.js", methods=["GET"])
 def tgolf():
     response = make_response(open("transistor_golf.js","r").read())

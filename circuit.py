@@ -84,6 +84,25 @@ def get_coord_dict(bars, isolators):
             coord_dict[c] = cc[0]
     return coord_dict
 
+def get_connected_region(components_json):
+    class DummySolver:
+        def var(self):
+            return None
+    tile = components_json["tile"]
+    del components_json["tile"]
+    bars, isolators, _, _, _, _, _ = parse_components(components_json, DummySolver())
+    ccs = get_connected_components(bars, isolators)
+    tile = (tile["x"], tile["y"])
+    for cc in ccs:
+        if tile in cc:
+            break
+    else:
+        cc = [tile]
+
+    resp = {idx: {"x": int(c[0]), "y": int(c[1])} for idx, c in enumerate(cc)}
+    #print(resp)
+    return resp
+
 
 def get_transistor_clauses(gate, source, drain, trans_sign):
     # trans_sign: 1 for positive transistor (connects when gate is supply voltage)
