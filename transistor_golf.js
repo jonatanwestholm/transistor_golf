@@ -299,23 +299,18 @@ function spawn(elem_class){
         top_id = top_id + 1;
     }
     if (elem_class == "draggable x" || elem_class == "all"){
-        if(num_x > 1){
-            return;
-        }else{
-            num_x += 1;
-        }
         const rect = document.createElementNS("http://www.w3.org/2000/svg", "image");
         //const rect = document.createElement("box");
         //rect.setAttributeNS(null, "class", "draggable");
         //rect.classList.add("transistor");
         rect.setAttributeNS(null, "class", "draggable x");
-        rect.setAttributeNS(null, "title", "x1");
+        rect.setAttributeNS(null, "title", "x");
         rect.setAttributeNS(null, "width", 4);
         rect.setAttributeNS(null, "height", 4);
         rect.setAttributeNS(null, "x", 0);
         rect.setAttributeNS(null, "y", 28);
         //rect.setAttributeNS(null, "href", "transistor3.svg")
-        rect.setAttributeNS(null, "href", "sprites/x1.svg")
+        rect.setAttributeNS(null, "href", "sprites/x.svg")
         rect.setAttributeNS(null, "id", top_id);
         rect.setAttributeNS(null, "z-index", 1);
         //rect.setAttributeNS(null, "fill", "#007bff");
@@ -510,7 +505,6 @@ function get_connected_regions(id2coords, coords2ids){
 */
 
 var top_id = 0;
-var num_x = 0;
 var blocks = new Map();
 make_lines();
 
