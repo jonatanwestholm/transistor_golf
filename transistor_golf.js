@@ -123,14 +123,23 @@ function make_draggable(event){
 
     function start_drag(event){
         event.preventDefault();
+        flush_highlighted();
         if (event.target.classList.contains("draggable")){
             if (event.button == 0){
-                elem = event.target;
-                var coord = get_mouse_position(event);
-                offset = {
-                            x: coord.x - elem.getAttributeNS(null, "x"),
-                            y: coord.y - elem.getAttributeNS(null, "y")
-                         };
+                if(event.detail == 1){
+                    elem = event.target;
+                    var coord = get_mouse_position(event);
+                    offset = {
+                                x: coord.x - elem.getAttributeNS(null, "x"),
+                                y: coord.y - elem.getAttributeNS(null, "y")
+                             };
+                }else if (event.detail == 2){
+                    var coord = get_mouse_position(event);
+                    var x_coord = parseInt(coord.x / 4);
+                    var y_coord = parseInt(coord.y / 4);
+                    //set_message(`double clicked on (${x_coord}, ${y_coord})`);
+                    highlight_connected_region(x_coord, y_coord);
+                }
             }else if(event.button == 1){
                 target = event.target;
                 var mid = get_rect_mid(target);
@@ -461,6 +470,40 @@ function make_lines(){
     }
 }
 
+function highlight_connected_region(x, y){
+    //highlight_tiles([{x: 10, y: 10}, {x: 10, y: 11}]);
+    highlight_tiles([{"x": x, "y": y}]);
+    //set_message("highlighted");
+}
+
+function highlight_tiles(tiles){
+    flush_highlighted();
+    const svgbox = document.getElementById("svgbox");
+    for (idx in tiles){
+        const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        console.log(tiles[idx].x);
+        console.log(tiles[idx].y);
+        rect.setAttributeNS(null, "x", tiles[idx].x * 4);
+        rect.setAttributeNS(null, "y", tiles[idx].y * 4);
+        rect.setAttributeNS(null, "width", 4);
+        rect.setAttributeNS(null, "height", 4);
+        rect.setAttributeNS(null, "fill", "yellow");
+        rect.setAttributeNS(null, "fill-opacity", 0.3);
+        svgbox.appendChild(rect);
+        highlighted_tiles.push(rect);
+    }    
+}
+
+function flush_highlighted(){
+    const svgbox = document.getElementById("svgbox");
+    for(idx in highlighted_tiles){
+        svgbox.removeChild(highlighted_tiles[idx]);
+    }
+    highlighted_tiles = [];
+}
+
+
+
 /*
 function get_connected_regions(id2coords, coords2ids){
     const id2cr = new Map();
@@ -506,6 +549,7 @@ function get_connected_regions(id2coords, coords2ids){
 
 var top_id = 0;
 var blocks = new Map();
+var highlighted_tiles = [];
 make_lines();
 
 //console.log(get_connected_regions({0: [0], 1: [1], 2: [2], 3: [0, 1, 3, 4]}))
