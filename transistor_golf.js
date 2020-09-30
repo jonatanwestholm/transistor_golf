@@ -174,7 +174,16 @@ function make_draggable(event){
     function end_drag(event){
         if (elem){
             id = elem.getAttributeNS(null, "id");
-            blocks[id].move_to(elem.getAttributeNS(null, "x"), elem.getAttributeNS(null, "y"));
+            x = elem.getAttributeNS(null, "x");
+            y = elem.getAttributeNS(null, "y");
+            if(x <= 40 && (120 - y) <= 40){
+                // dragged to recycle box
+                const svgbox = document.getElementById("svgbox");
+                svgbox.removeChild(elem);
+                delete blocks[id];
+            }else{
+                blocks[id].move_to(x, y);
+            }
             elem = false;            
         }
     }
@@ -470,6 +479,22 @@ function make_lines(){
     }
 }
 
+function make_recycle_box(){
+    const svgbox = document.getElementById("svgbox");
+    //<line x1="0" y1="0" x2="200" y2="200" style="stroke:rgb(255,0,0);stroke-width:2" />
+    var xy = [[0, 80, 0, 120], [40, 80, 40, 120], [0, 120, 40, 120], [0, 80, 40, 80]];
+    for(i in xy){
+        var [x1, y1, x2, y2] = xy[i];
+        var line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttributeNS(null, "x1", x1);
+        line.setAttributeNS(null, "y1", y1);
+        line.setAttributeNS(null, "x2", x2);
+        line.setAttributeNS(null, "y2", y2);
+        line.setAttributeNS(null, "style", "stroke:rgb(255, 0, 0);stroke-width:0.2");
+        svgbox.appendChild(line);
+    }
+}
+
 function highlight_connected_region(x, y){
     //highlight_tiles([{x: 10, y: 10}, {x: 10, y: 11}]);
     //highlight_tiles([{"x": x, "y": y}]);
@@ -563,6 +588,7 @@ var top_id = 0;
 var blocks = new Map();
 var highlighted_tiles = [];
 make_lines();
+make_recycle_box();
 
 //console.log(get_connected_regions({0: [0], 1: [1], 2: [2], 3: [0, 1, 3, 4]}))
 //console.log(get_connected_regions({0: [0], 1: [1]}, {0: [0], 1: [1]}));
