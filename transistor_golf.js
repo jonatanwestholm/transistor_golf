@@ -13,9 +13,10 @@ class Component{
 }
 
 class Bar extends Component{
-    constructor(id){
+    constructor(id, elem){
         super();
         this.id = id;
+        this.elem = elem;
         this.rot = 0;
         this.length = 5;
         this.x = 0;
@@ -32,9 +33,10 @@ class Bar extends Component{
 }
 
 class Node extends Component{
-    constructor(id, type_name){
+    constructor(id, type_name, elem){
         super();
         this.id = id;
+        this.elem = elem;
         this.type_name = type_name;
         this.rot = 0;
         this.x = 0;
@@ -58,9 +60,10 @@ class Node extends Component{
 }
 
 class Transistor extends Component{
-    constructor(id, sign){
+    constructor(id, sign, elem){
         super();
         this.id = id;
+        this.elem = elem;
         this.sign = sign;
         this.rot = 0;
         if(sign > 0){
@@ -117,7 +120,10 @@ function make_draggable(event){
     svg.addEventListener("mouseleave", end_drag);
 
     var elem = false;
-    var offset;
+    var offsets;
+    var click_x0y0 = false;
+    var selected_blocks = false;
+    var begin_drag = false;
 
     spawn("all");
 
@@ -127,13 +133,23 @@ function make_draggable(event){
         if (event.target.classList.contains("draggable")){
             if (event.button == 0){
                 if(event.detail == 1){
-                    elem = event.target;
-                    var coord = get_mouse_position(event);
-                    offset = {
-                                x: coord.x - elem.getAttributeNS(null, "x"),
-                                y: coord.y - elem.getAttributeNS(null, "y")
-                             };
+                    // single click
+                    if(selected_blocks){
+                        elem = event.target;
+                        id = elem.getAttributeNS(null, "id");
+                        if(!blocks_include_id(selected_blocks, id)){
+                            // we clicked on a non-selected element
+                            end_select();
+
+                        }
+                    }else{
+                        elem = event.target;
+                        selected_blocks = [{"elem": elem}];
+                    }
+                    begin_drag = true;
+                    offsets = get_offsets(selected_blocks, event);
                 }else if (event.detail == 2){
+                    // double-click to highlight connected region
                     var coord = get_mouse_position(event);
                     var x_coord = parseInt(coord.x / 4);
                     var y_coord = parseInt(coord.y / 4);
@@ -151,41 +167,66 @@ function make_draggable(event){
                 blocks[id].rotate90();
                 //set_message(`${target.getAttributeNS(null, "x")} ${target.getAttributeNS(null, "y")}`);
             }
+        }else{
+            // we clicked outside of an element: select a box instead
+            if (event.button == 0){
+                click_x0y0 = get_mouse_position(event);
+            }
         }
+
         if(elem && !(elem.getAttributeNS(null, "nontrivial"))){
             spawn(elem.getAttributeNS(null, "class"));
             elem.setAttributeNS(null, "nontrivial", "true");
+            elem = false;
         }
     }
 
     function drag(event){
-        if (elem){
+        if (selected_blocks && begin_drag){
+            console.log("dragging");
             event.preventDefault();
-            var coord = get_mouse_position(event);
-            var rot = elem.getAttributeNS(null, "rotation") || 0;
-            elem.setAttributeNS(null, "x", parseInt((coord.x - offset.x + 2)/4)*4);
-            elem.setAttributeNS(null, "y", parseInt((coord.y - offset.y + 2)/4)*4);
-            var mid = get_rect_mid(elem);
-            elem.setAttributeNS(null, "transform", `rotate(${rot} ${mid.x} ${mid.y})`);
-
+            for(idx in selected_blocks){
+                var block = selected_blocks[idx];
+                var block_elem = block.elem;
+                var coord = get_mouse_position(event);
+                var rot = block_elem.getAttributeNS(null, "rotation") || 0;
+                id = block_elem.getAttributeNS(null, "id");
+                //block_elem.setAttributeNS(null, "x", parseInt((coord.x - offset.x + 2)/4)*4);
+                //block_elem.setAttributeNS(null, "y", parseInt((coord.y - offset.y + 2)/4)*4);
+                block_elem.setAttributeNS(null, "x", parseInt((coord.x - offsets[id].x + 2)/4)*4);
+                block_elem.setAttributeNS(null, "y", parseInt((coord.y - offsets[id].y + 2)/4)*4);
+                var mid = get_rect_mid(block_elem);
+                block_elem.setAttributeNS(null, "transform", `rotate(${rot} ${mid.x} ${mid.y})`);                
+            }
         }
     }
 
     function end_drag(event){
-        if (elem){
-            id = elem.getAttributeNS(null, "id");
-            x = elem.getAttributeNS(null, "x");
-            y = elem.getAttributeNS(null, "y");
-            if(x <= 40 && (120 - y) <= 40){
-                // dragged to recycle box
-                const svgbox = document.getElementById("svgbox");
-                svgbox.removeChild(elem);
-                delete blocks[id];
-            }else{
-                blocks[id].move_to(x, y);
+        if (selected_blocks){
+            event.preventDefault();
+            for(idx in selected_blocks){
+                var block = selected_blocks[idx];
+                var block_elem = block.elem;
+                id = block_elem.getAttributeNS(null, "id");
+                x = block_elem.getAttributeNS(null, "x");
+                y = block_elem.getAttributeNS(null, "y");
+                if(x <= 40 && (120 - y) <= 40){
+                    // dragged to recycle box
+                    const svgbox = document.getElementById("svgbox");
+                    svgbox.removeChild(block_elem);
+                    delete blocks[id];
+                }else{
+                    blocks[id].move_to(x, y);
+                }
             }
-            elem = false;            
+            // should maybe not end selected blocks here!
+            end_select();
+        }else if(click_x0y0){
+            selected_blocks = get_selected_blocks(click_x0y0, get_mouse_position(event));
+            console.log(selected_blocks);
+            click_x0y0 = false;
         }
+        begin_drag = false;
     }
 
     function get_mouse_position(event){
@@ -196,18 +237,29 @@ function make_draggable(event){
         };
     }
 
+    function end_select(){
+        selected_blocks = false;
+    }
+
     function get_rect_mid(rect){
         return  {
                     x: parseFloat(rect.getAttributeNS(null, "x")), // + parseFloat(rect.getAttributeNS(null, "width"))/2,
                     y: parseFloat(rect.getAttributeNS(null, "y")) // + parseFloat(rect.getAttributeNS(null, "height"))/2
                 };
-        /*
-        return  {
-                    x: parseFloat(parseFloat(rect.getAttributeNS(null, "x"))),
-                    y: parseFloat(parseFloat(rect.getAttributeNS(null, "y"))),
-                };
-        */
     }
+
+    function get_offsets(blocks, event){
+        var coord = get_mouse_position(event);
+        offsets = new Map();
+        for(idx in blocks){
+            elem = blocks[idx].elem;
+            id = elem.getAttributeNS(null, "id");
+            offsets[id] = { x: coord.x - elem.getAttributeNS(null, "x"),
+                            y: coord.y - elem.getAttributeNS(null, "y")};
+        }
+        return offsets;
+    }
+
 }
 
 function spawn(elem_class){
@@ -235,7 +287,7 @@ function spawn(elem_class){
         //rect.setAttributeNS(null, "z-index", -1);
         //rect.setAttributeNS(null, "fill", "#007bff");    
         svgbox.appendChild(rect);
-        blocks[top_id] = new Transistor(top_id, 1);
+        blocks[top_id] = new Transistor(top_id, 1, rect);
         top_id = top_id + 1;
     }
     if (elem_class == "draggable neg transistor" || elem_class == "all"){
@@ -255,7 +307,7 @@ function spawn(elem_class){
         rect.setAttributeNS(null, "z-index", -1);
         //rect.setAttributeNS(null, "fill", "#007bff");
         svgbox.appendChild(rect);
-        blocks[top_id] = new Transistor(top_id, -1);
+        blocks[top_id] = new Transistor(top_id, -1, rect);
         top_id = top_id + 1;
     }
     if (elem_class == "draggable bar" || elem_class == "all"){
@@ -274,7 +326,7 @@ function spawn(elem_class){
         rect.setAttributeNS(null, "z-index", 0);
         //rect.setAttributeNS(null, "fill", "#007bff");
         svgbox.appendChild(rect);
-        blocks[top_id] = new Bar(top_id);
+        blocks[top_id] = new Bar(top_id, rect);
         top_id = top_id + 1;
     }
     if (elem_class == "draggable vdd" || elem_class == "all"){
@@ -294,7 +346,7 @@ function spawn(elem_class){
         rect.setAttributeNS(null, "z-index", 1);
         //rect.setAttributeNS(null, "fill", "#007bff");
         svgbox.appendChild(rect);
-        blocks[top_id] = new Node(top_id, "supply");
+        blocks[top_id] = new Node(top_id, "supply", rect);
         top_id = top_id + 1;
     }
     if (elem_class == "draggable gnd" || elem_class == "all"){
@@ -313,7 +365,7 @@ function spawn(elem_class){
         rect.setAttributeNS(null, "z-index", 1);
         //rect.setAttributeNS(null, "fill", "#007bff");
         svgbox.appendChild(rect);
-        blocks[top_id] = new Node(top_id, "ground");
+        blocks[top_id] = new Node(top_id, "ground", rect);
         top_id = top_id + 1;
     }
     if (elem_class == "draggable x" || elem_class == "all"){
@@ -333,7 +385,7 @@ function spawn(elem_class){
         rect.setAttributeNS(null, "z-index", 1);
         //rect.setAttributeNS(null, "fill", "#007bff");
         svgbox.appendChild(rect);
-        blocks[top_id] = new Node(top_id, "input");
+        blocks[top_id] = new Node(top_id, "input", rect);
         top_id = top_id + 1;
     }
     if (elem_class == "draggable t" || elem_class == "all"){
@@ -353,7 +405,7 @@ function spawn(elem_class){
         rect.setAttributeNS(null, "z-index", 1);        
         //rect.setAttributeNS(null, "fill", "#007bff");
         svgbox.appendChild(rect);
-        blocks[top_id] = new Node(top_id, "output");
+        blocks[top_id] = new Node(top_id, "output", rect);
         top_id = top_id + 1;
     }
     if (elem_class == "draggable isolator" || elem_class == "all"){
@@ -373,7 +425,7 @@ function spawn(elem_class){
         rect.setAttributeNS(null, "z-index", 1);        
         //rect.setAttributeNS(null, "fill", "#007bff");
         svgbox.appendChild(rect);
-        blocks[top_id] = new Node(top_id, "isolator");
+        blocks[top_id] = new Node(top_id, "isolator", rect);
         top_id = top_id + 1;
     }
 }
@@ -450,6 +502,33 @@ function parse_response(response){
 
 function set_message(message){
     document.getElementById("message").value = message;
+}
+
+function get_selected_blocks(coord0, coord1){
+    x0 = coord0.x / 4;
+    x1 = coord1.x / 4;
+    y0 = coord0.y / 4;
+    y1 = coord1.y / 4;
+
+    var selected = [];
+
+    for(id in blocks){
+        x = blocks[id].x;
+        y = blocks[id].y;
+        if((x0 - x)*(x - x1) >= 0 && (y0 - y)*(y - y1) >= 0){
+            selected.push(blocks[id]);
+        }
+    }
+    return selected;
+}
+
+function blocks_include_id(blocks, id){
+    for(idx in blocks){
+        if(id == blocks[idx].elem.getAttributeNS(null, "id")){
+            return true;
+        }
+    }
+    return false;
 }
 
 function make_lines(){
