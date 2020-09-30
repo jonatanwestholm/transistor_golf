@@ -84,10 +84,11 @@ def get_coord_dict(bars, isolators):
             coord_dict[c] = cc[0]
     return coord_dict
 
+class DummySolver:
+    def var(self):
+        return None
+
 def get_connected_region(components_json):
-    class DummySolver:
-        def var(self):
-            return None
     tile = components_json["tile"]
     del components_json["tile"]
     bars, isolators, _, _, _, _, _ = parse_components(components_json, DummySolver())
@@ -101,6 +102,19 @@ def get_connected_region(components_json):
 
     resp = {idx: {"x": int(c[0]), "y": int(c[1])} for idx, c in enumerate(cc)}
     #print(resp)
+    return resp
+
+
+def get_covered_coordinates(components_json):
+    print(components_json)
+    bars, isolators, supplys, grounds, inputs, outputs, transistors = parse_components(components_json, DummySolver())
+    print("bars:", bars)
+    all_vars = supplys + grounds + inputs + outputs + [node for trans in transistors for node in trans[:-1]]
+    print(all_vars)
+    resp = {idx: {"x": int(c.pos[0]), "y": int(c.pos[1])} for idx, c in enumerate(all_vars)}
+    n = len(resp)
+    resp.update({idx0 * 10000 + idx1 + n: {"x": int(c[0]), "y": int(c[1])} for idx0, bar in enumerate(bars) for idx1, c in enumerate(get_covered_points(bar))})
+    print(resp)
     return resp
 
 

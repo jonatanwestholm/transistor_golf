@@ -223,6 +223,7 @@ function make_draggable(event){
             end_select();
         }else if(click_x0y0){
             selected_blocks = get_selected_blocks(click_x0y0, get_mouse_position(event));
+            highlight_selected_blocks(selected_blocks);
             console.log(selected_blocks);
             click_x0y0 = false;
         }
@@ -468,7 +469,7 @@ function evaluate_circuit(){
     //console.log(json_data);
     //set_message("created json...");    
     //httpPostAsync('http://127.0.0.1:5000/ec', parse_response, json_data);
-    httpPostAsync(get_address() + '/ec', parse_response, json_data);
+    httpPostAsync(get_address() + 'ec', parse_response, json_data);
     //set_message("sent json");
 }
 
@@ -574,6 +575,17 @@ function make_recycle_box(){
     }
 }
 
+function highlight_selected_blocks(selected_blocks){
+    var json_data = {};
+    for(idx in selected_blocks){
+        elem = selected_blocks[idx].elem;
+        id = elem.getAttributeNS(null, "id");
+        json_data[id] = blocks[id].get_json_data();
+    }
+    console.log(json_data);
+    httpPostAsync(get_address() + "hsc", generate_highlight_tiles("blue"), json_data);
+}
+
 function highlight_connected_region(x, y){
     //highlight_tiles([{x: 10, y: 10}, {x: 10, y: 11}]);
     //highlight_tiles([{"x": x, "y": y}]);
@@ -586,28 +598,32 @@ function highlight_connected_region(x, y){
     }
     json_data["tile"] = {"x": x, "y": y};
 
-    httpPostAsync(get_address() + '/hcr', highlight_tiles, json_data);
+    httpPostAsync(get_address() + 'hcr', generate_highlight_tiles("yellow"), json_data);
 }
 
-function highlight_tiles(tiles){
-    flush_highlighted();
-    tiles = JSON.parse(tiles);
-    //set_message(tiles);
-    const svgbox = document.getElementById("svgbox");
-    for (idx in tiles){
-        const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-        //console.log(tiles[idx]);
-        //console.log(tiles[idx]["x"]);
-        //console.log(tiles[idx]["y"]);
-        rect.setAttributeNS(null, "x", tiles[idx]["x"] * 4);
-        rect.setAttributeNS(null, "y", tiles[idx]["y"] * 4);
-        rect.setAttributeNS(null, "width", 4);
-        rect.setAttributeNS(null, "height", 4);
-        rect.setAttributeNS(null, "fill", "yellow");
-        rect.setAttributeNS(null, "fill-opacity", 0.3);
-        svgbox.appendChild(rect);
-        highlighted_tiles.push(rect);
-    }    
+function generate_highlight_tiles(color){
+    function highlight_tiles(tiles){
+        flush_highlighted();
+        tiles = JSON.parse(tiles);
+        //set_message(tiles);
+        const svgbox = document.getElementById("svgbox");
+        for (idx in tiles){
+            const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+            //console.log(tiles[idx]);
+            //console.log(tiles[idx]["x"]);
+            //console.log(tiles[idx]["y"]);
+            rect.setAttributeNS(null, "x", tiles[idx]["x"] * 4);
+            rect.setAttributeNS(null, "y", tiles[idx]["y"] * 4);
+            rect.setAttributeNS(null, "width", 4);
+            rect.setAttributeNS(null, "height", 4);
+            rect.setAttributeNS(null, "fill", color);
+            rect.setAttributeNS(null, "fill-opacity", 0.3);
+            rect.setAttributeNS(null, "pointer-events", "none");
+            svgbox.appendChild(rect);
+            highlighted_tiles.push(rect);
+        }    
+    }
+    return highlight_tiles;
 }
 
 function flush_highlighted(){
