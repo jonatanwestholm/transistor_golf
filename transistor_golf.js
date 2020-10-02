@@ -53,6 +53,8 @@ class Node extends Component{
         }
     }
 
+    rotate90(){}
+
     get_json_data(){
         return [this.type_name,
                [this.x, this.y]];
@@ -215,7 +217,8 @@ function make_draggable(event){
                 id = block_elem.getAttributeNS(null, "id");
                 x = block_elem.getAttributeNS(null, "x");
                 y = block_elem.getAttributeNS(null, "y");
-                if(x <= 40 && (120 - y) <= 40){
+                //if((x <= 40 && (120 - y) <= 40) || x <= 0 || x >= 300 || y <= 0 || y >= 120){
+                if(x <= 24 || x >= 300 || y <= 0 || y >= 120){
                     // dragged to recycle box
                     const svgbox = document.getElementById("svgbox");
                     svgbox.removeChild(block_elem);
@@ -630,7 +633,8 @@ function make_lines(){
 function make_recycle_box(){
     const svgbox = document.getElementById("svgbox");
     //<line x1="0" y1="0" x2="200" y2="200" style="stroke:rgb(255,0,0);stroke-width:2" />
-    var xy = [[0, 80, 0, 120], [40, 80, 40, 120], [0, 120, 40, 120], [0, 80, 40, 80]];
+    //var xy = [[0, 80, 0, 120], [40, 80, 40, 120], [0, 120, 40, 120], [0, 80, 40, 80]];
+    var xy = [[24, 0, 24, 120]];
     for(i in xy){
         var [x1, y1, x2, y2] = xy[i];
         var line = document.createElementNS("http://www.w3.org/2000/svg", "line");
@@ -638,7 +642,7 @@ function make_recycle_box(){
         line.setAttributeNS(null, "y1", y1);
         line.setAttributeNS(null, "x2", x2);
         line.setAttributeNS(null, "y2", y2);
-        line.setAttributeNS(null, "style", "stroke:rgb(255, 0, 0);stroke-width:0.2");
+        line.setAttributeNS(null, "style", "stroke:rgb(50, 50, 50);stroke-width:0.2");
         svgbox.appendChild(line);
     }
 }
