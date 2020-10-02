@@ -134,16 +134,13 @@ function make_draggable(event){
             if (event.button == 0){
                 if(event.detail == 1){
                     // single click
-                    if(selected_blocks){
-                        elem = event.target;
-                        id = elem.getAttributeNS(null, "id");
-                        if(!blocks_include_id(selected_blocks, id)){
-                            // we clicked on a non-selected element
-                            end_select();
-
-                        }
+                    elem = event.target;
+                    id = elem.getAttributeNS(null, "id");
+                    if(selected_blocks && blocks_include_id(selected_blocks, id)){
+                        //we clicked on one of the selected block
                     }else{
-                        elem = event.target;
+                        // we clicked on a non-selected element
+                        flush_selected_blocks();
                         selected_blocks = [{"elem": elem}];
                     }
                     begin_drag = true;
@@ -170,7 +167,11 @@ function make_draggable(event){
         }else{
             // we clicked outside of an element: select a box instead
             if (event.button == 0){
+                //flush_dragbox_lines();
+                flush_selected_blocks();
+                selected_blocks = false;
                 click_x0y0 = get_mouse_position(event);
+                start_dragbox_lines(click_x0y0);
             }
         }
 
@@ -183,7 +184,6 @@ function make_draggable(event){
 
     function drag(event){
         if (selected_blocks && begin_drag){
-            console.log("dragging");
             event.preventDefault();
             for(idx in selected_blocks){
                 var block = selected_blocks[idx];
@@ -198,6 +198,11 @@ function make_draggable(event){
                 var mid = get_rect_mid(block_elem);
                 block_elem.setAttributeNS(null, "transform", `rotate(${rot} ${mid.x} ${mid.y})`);                
             }
+        }
+        if(click_x0y0){
+            //event.preventDefault();
+            coord = get_mouse_position(event);
+            update_dragbox_lines(coord);
         }
     }
 
@@ -220,11 +225,12 @@ function make_draggable(event){
                 }
             }
             // should maybe not end selected blocks here!
-            end_select();
+            flush_selected_blocks();
         }else if(click_x0y0){
             selected_blocks = get_selected_blocks(click_x0y0, get_mouse_position(event));
             highlight_selected_blocks(selected_blocks);
-            console.log(selected_blocks);
+            flush_dragbox_lines();
+            //console.log(selected_blocks);
             click_x0y0 = false;
         }
         begin_drag = false;
@@ -238,7 +244,7 @@ function make_draggable(event){
         };
     }
 
-    function end_select(){
+    function flush_selected_blocks(){
         selected_blocks = false;
     }
 
@@ -501,9 +507,11 @@ function parse_response(response){
     set_message(message);
 }
 
+
 function set_message(message){
     document.getElementById("message").value = message;
 }
+
 
 function get_selected_blocks(coord0, coord1){
     x0 = coord0.x / 4;
@@ -531,6 +539,66 @@ function blocks_include_id(blocks, id){
     }
     return false;
 }
+
+function start_dragbox_lines(click_x0y0){
+    const svgbox = document.getElementById("svgbox");
+    var line_name;
+    var line_names = ["top", "bottom", "left", "right"];
+    x = click_x0y0.x;
+    y = click_x0y0.y;
+    for(i in line_names){
+        line_name = line_names[i];
+        var line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttributeNS(null, "x1", x);
+        line.setAttributeNS(null, "y1", y);
+        line.setAttributeNS(null, "x2", x);
+        line.setAttributeNS(null, "y2", y);
+        line.setAttributeNS(null, "style", "stroke:rgb(0, 0, 255);stroke-width:0.1");
+        try{
+            svgbox.removeChild(dragbox_lines[line_name]);
+        }catch{
+            //console.log(`no line to remove`);
+        }
+        svgbox.appendChild(line);
+        dragbox_lines[line_name] = line;
+    }
+}
+
+function update_dragbox_lines(coord){
+    x = coord.x;
+    y = coord.y;
+    top_line = dragbox_lines["top"];
+    top_line.setAttributeNS(null, "x2", x);
+    bottom_line = dragbox_lines["bottom"];
+    bottom_line.setAttributeNS(null, "x2", x);
+    bottom_line.setAttributeNS(null, "y1", y);
+    bottom_line.setAttributeNS(null, "y2", y);
+
+    left_line = dragbox_lines["left"];
+    left_line.setAttributeNS(null, "y2", y);
+    right_line = dragbox_lines["right"];
+    right_line.setAttributeNS(null, "y2", y);
+    right_line.setAttributeNS(null, "x1", x);
+    right_line.setAttributeNS(null, "x2", x);
+}
+
+function flush_dragbox_lines(){
+    /*
+    */
+    const svgbox = document.getElementById("svgbox");
+    line_names = ["top", "bottom", "left", "right"];
+    for(i in line_names){
+        line_name = line_names[i];
+        line = dragbox_lines[line_name];
+        try{
+            svgbox.removeChild(line);
+        }catch{
+            //console.log(`no line to remove`);
+        }
+        //delete dragbox_lines[line_name];
+    }
+}
+
 
 function make_lines(){
     const svgbox = document.getElementById("svgbox");
@@ -582,7 +650,6 @@ function highlight_selected_blocks(selected_blocks){
         id = elem.getAttributeNS(null, "id");
         json_data[id] = blocks[id].get_json_data();
     }
-    console.log(json_data);
     httpPostAsync(get_address() + "hsc", generate_highlight_tiles("blue"), json_data);
 }
 
@@ -681,6 +748,7 @@ function get_connected_regions(id2coords, coords2ids){
 
 var top_id = 0;
 var blocks = new Map();
+var dragbox_lines = new Map();
 var highlighted_tiles = [];
 make_lines();
 make_recycle_box();
