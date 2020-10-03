@@ -237,6 +237,7 @@ function make_draggable(event){
             click_x0y0 = false;
         }
         begin_drag = false;
+        sort_zorder();
     }
 
     function get_mouse_position(event){
@@ -294,7 +295,7 @@ function spawn(elem_class){
         rect.setAttributeNS(null, "href", "sprites/transistor_pos.svg")
         rect.setAttributeNS(null, "id", top_id);
         //rect.setAttributeNS(null, "position", "relative");
-        //rect.setAttributeNS(null, "z-index", -1);
+        rect.setAttributeNS(null, "z-index", -1);
         //rect.setAttributeNS(null, "fill", "#007bff");    
         svgbox.appendChild(rect);
         blocks[top_id] = new Transistor(top_id, 1, rect);
@@ -333,7 +334,7 @@ function spawn(elem_class){
         //rect.setAttributeNS(null, "href", "transistor3.svg")
         rect.setAttributeNS(null, "href", "sprites/bar.svg")
         rect.setAttributeNS(null, "id", top_id);
-        rect.setAttributeNS(null, "z-index", 0);
+        rect.setAttributeNS(null, "z-index", -1);
         //rect.setAttributeNS(null, "fill", "#007bff");
         svgbox.appendChild(rect);
         blocks[top_id] = new Bar(top_id, rect);
@@ -412,7 +413,7 @@ function spawn(elem_class){
         rect.setAttributeNS(null, "href", "sprites/t.svg")
         rect.setAttributeNS(null, "id", top_id);
         rect.setAttributeNS(null, "position", "relative");
-        rect.setAttributeNS(null, "z-index", 1);        
+        rect.setAttributeNS(null, "z-index", 1);
         //rect.setAttributeNS(null, "fill", "#007bff");
         svgbox.appendChild(rect);
         blocks[top_id] = new Node(top_id, "output", rect);
@@ -438,6 +439,12 @@ function spawn(elem_class){
         blocks[top_id] = new Node(top_id, "isolator", rect);
         top_id = top_id + 1;
     }
+}
+
+function sort_zorder(){
+    var draggables = d3.selectAll(".draggable");
+    draggables.data(draggables[0].map(function(cv){ return cv.getAttributeNS(null, "z-index"); }));
+    draggables.sort(d3.ascending);
 }
 
 
@@ -704,7 +711,6 @@ function flush_highlighted(){
     }
     highlighted_tiles = [];
 }
-
 
 
 /*
