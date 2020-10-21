@@ -126,12 +126,20 @@ function make_draggable(event){
     var click_x0y0 = false;
     var selected_blocks = false;
     var begin_drag = false;
+    var draw_bar = false;
+    var bar_width = -1;
 
     spawn("all");
 
     function start_drag(event){
         event.preventDefault();
         flush_highlighted();
+        if(event.shiftKey){
+            var coord = get_mouse_position(event);
+            elem = spawn_bar(parseInt(coord.x / 4) * 4 , parseInt(coord.y / 4) * 4);
+            draw_bar = true;
+            return;
+        }
         if (event.target.classList.contains("draggable")){
             if (event.button == 0){
                 if(event.detail == 1){
@@ -201,6 +209,34 @@ function make_draggable(event){
                 block_elem.setAttributeNS(null, "transform", `rotate(${rot} ${mid.x} ${mid.y})`);                
             }
         }
+        if(event.shiftKey && draw_bar){
+            var coord = get_mouse_position(event);
+            id = elem.getAttributeNS(null, "id");
+            block = blocks[id];
+            x0 = elem.getAttributeNS(null, "x0");
+            y0 = elem.getAttributeNS(null, "y0");
+            if(Math.abs(coord.x - x0) >= Math.abs(coord.y - y0)){
+                elem.setAttributeNS(null, "width", align(Math.abs(coord.x - x0)));
+                bar_width = parseInt(Math.abs(coord.x - x0) / 4);
+                elem.setAttributeNS(null, "height", 4);
+                if(coord.x < x0){
+                    elem.setAttributeNS(null, "x", align(coord.x));
+                    block.rot = 2;
+                }else{
+                    block.rot = 0;
+                }
+            }else{
+                elem.setAttributeNS(null, "width", 4);
+                elem.setAttributeNS(null, "height", align(Math.abs(coord.y - y0)));
+                bar_width = parseInt(Math.abs(coord.y - y0) / 4);
+                if(coord.y < y0){
+                    elem.setAttributeNS(null, "y", align(coord.y));
+                    block.rot = 3;
+                }else{
+                    block.rot = 1;
+                }
+            }
+        }
         if(click_x0y0){
             //event.preventDefault();
             coord = get_mouse_position(event);
@@ -235,6 +271,15 @@ function make_draggable(event){
             flush_dragbox_lines();
             //console.log(selected_blocks);
             click_x0y0 = false;
+        }else if(draw_bar){
+            id = elem.getAttributeNS(null, "id");
+            x = elem.getAttributeNS(null, "x");
+            y = elem.getAttributeNS(null, "y");
+            blocks[id].move_to(x, y);
+            blocks[id].length = bar_width;
+            bar_width = -1;
+            draw_bar = false;
+            elem = false;
         }
         begin_drag = false;
         sort_zorder();
@@ -271,6 +316,29 @@ function make_draggable(event){
         return offsets;
     }
 
+}
+
+function spawn_bar(x, y){
+    const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    //const rect = document.createElement("box");
+    //rect.setAttributeNS(null, "class", "draggable");
+    //rect.classList.add("transistor");
+    rect.setAttributeNS(null, "class", "draggable bar");
+    rect.setAttributeNS(null, "width",  4);
+    rect.setAttributeNS(null, "height", 4);
+    rect.setAttributeNS(null, "x", x);
+    rect.setAttributeNS(null, "x0", x);
+    rect.setAttributeNS(null, "y", y);
+    rect.setAttributeNS(null, "y0", y);
+    rect.setAttributeNS(null, "fill", "#b4b4b4");
+    //rect.setAttributeNS(null, "href", "transistor3.svg")
+    rect.setAttributeNS(null, "id", top_id);
+    rect.setAttributeNS(null, "z-index", -1);
+    svgbox.appendChild(rect);
+    blocks[top_id] = new Bar(top_id, rect);
+    top_id = top_id + 1;
+
+    return rect
 }
 
 function spawn(elem_class){
@@ -710,6 +778,10 @@ function flush_highlighted(){
         svgbox.removeChild(highlighted_tiles[idx]);
     }
     highlighted_tiles = [];
+}
+
+function align(x){
+    return parseInt(x / 4) * 4;
 }
 
 
