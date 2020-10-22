@@ -39,8 +39,8 @@ def get_covered_points(bar):
         elif bar.rot == 3:
             diff = (0, -1)
             offset = (0, -1)
-        return [tuple(np.array(bar.pos) + np.array(offset) + i * np.array(diff)) for i in range(bar.length)]
-        #return [tuple(np.array(bar.pos) + i * np.array(diff)) for i in range(bar.length)]
+        #return [tuple(np.array(bar.pos) + np.array(offset) + i * np.array(diff)) for i in range(bar.length)]
+        return [tuple(np.array(bar.pos) + i * np.array(diff)) for i in range(bar.length)]
 
 
 def get_connected_components(bars, isolators):

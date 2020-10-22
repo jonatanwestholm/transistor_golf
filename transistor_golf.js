@@ -18,9 +18,9 @@ class Bar extends Component{
         this.id = id;
         this.elem = elem;
         this.rot = 0;
-        this.length = 5;
+        this.length = 1;
         this.x = 0;
-        this.y = 4;
+        this.y = 0;
     }
 
     get_json_data(){
@@ -165,6 +165,7 @@ function make_draggable(event){
                 }
             }else if(event.button == 1){
                 target = event.target;
+                if(target.classList.contains("bar")) {return;}
                 var mid = get_rect_mid(target);
                 var rot = parseInt(target.getAttributeNS(null, "rotation")) || 0;
                 rot = (rot + 90) % 360;
@@ -216,25 +217,27 @@ function make_draggable(event){
             x0 = elem.getAttributeNS(null, "x0");
             y0 = elem.getAttributeNS(null, "y0");
             if(Math.abs(coord.x - x0) >= Math.abs(coord.y - y0)){
-                elem.setAttributeNS(null, "width", align(Math.abs(coord.x - x0)));
-                bar_width = parseInt(Math.abs(coord.x - x0) / 4);
-                elem.setAttributeNS(null, "height", 4);
+                block.rot = 0;
                 if(coord.x < x0){
                     elem.setAttributeNS(null, "x", align(coord.x));
-                    block.rot = 2;
+                    compensate = 2;
                 }else{
-                    block.rot = 0;
+                    compensate = 0;
                 }
+                elem.setAttributeNS(null, "width", align(Math.abs(coord.x - x0)) + compensate * 4);
+                block.length = parseInt(Math.abs(coord.x - x0) / 4) + compensate;
+                elem.setAttributeNS(null, "height", 4);
             }else{
-                elem.setAttributeNS(null, "width", 4);
-                elem.setAttributeNS(null, "height", align(Math.abs(coord.y - y0)));
-                bar_width = parseInt(Math.abs(coord.y - y0) / 4);
+                block.rot = 1;
                 if(coord.y < y0){
                     elem.setAttributeNS(null, "y", align(coord.y));
-                    block.rot = 3;
+                    compensate = 2;
                 }else{
-                    block.rot = 1;
+                    compensate = 0;
                 }
+                elem.setAttributeNS(null, "width", 4);
+                elem.setAttributeNS(null, "height", align(Math.abs(coord.y - y0)) + compensate * 4);
+                block.length = parseInt(Math.abs(coord.y - y0) / 4) + compensate;
             }
         }
         if(click_x0y0){
@@ -276,7 +279,6 @@ function make_draggable(event){
             x = elem.getAttributeNS(null, "x");
             y = elem.getAttributeNS(null, "y");
             blocks[id].move_to(x, y);
-            blocks[id].length = bar_width;
             bar_width = -1;
             draw_bar = false;
             elem = false;
@@ -319,194 +321,61 @@ function make_draggable(event){
 }
 
 function spawn_bar(x, y){
-    const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-    //const rect = document.createElement("box");
-    //rect.setAttributeNS(null, "class", "draggable");
-    //rect.classList.add("transistor");
-    rect.setAttributeNS(null, "class", "draggable bar");
-    rect.setAttributeNS(null, "width",  4);
-    rect.setAttributeNS(null, "height", 4);
-    rect.setAttributeNS(null, "x", x);
+    rect = spawn_("rect", "bar", x, y, 4, 4, false, -1);
     rect.setAttributeNS(null, "x0", x);
-    rect.setAttributeNS(null, "y", y);
     rect.setAttributeNS(null, "y0", y);
-    rect.setAttributeNS(null, "fill", "#b4b4b4");
-    //rect.setAttributeNS(null, "href", "transistor3.svg")
-    rect.setAttributeNS(null, "id", top_id);
-    rect.setAttributeNS(null, "z-index", -1);
-    svgbox.appendChild(rect);
+    rect.setAttributeNS(null, "fill", "#000000");
+    rect.setAttributeNS(null, "fill-opacity", 0.3);
     blocks[top_id] = new Bar(top_id, rect);
     top_id = top_id + 1;
-
     return rect
 }
 
 function spawn(elem_class){
     const svgbox = document.getElementById("svgbox");
-    /*
-    if(box_num == 1){
-    }else{
-        const svgbox = document.getElementById("svgbox2");        
-    }*/
-    //const svgbox = document.getElementById("otherbox");
-    if (elem_class == "draggable transistor" || elem_class == "all"){
-        const rect = document.createElementNS("http://www.w3.org/2000/svg", "image");
-        //const rect = document.createElement("box");
-        //rect.setAttributeNS(null, "class", "draggable");
-        //rect.classList.add("transistor");
-        rect.setAttributeNS(null, "class", "draggable transistor");
-        rect.setAttributeNS(null, "title", "positive");
-        rect.setAttributeNS(null, "width", 12);
-        rect.setAttributeNS(null, "height", 8);
-        rect.setAttributeNS(null, "x", 0);
-        rect.setAttributeNS(null, "y", 0);
-        rect.setAttributeNS(null, "href", "sprites/transistor_pos.svg")
-        rect.setAttributeNS(null, "id", top_id);
-        //rect.setAttributeNS(null, "position", "relative");
-        rect.setAttributeNS(null, "z-index", -1);
-        //rect.setAttributeNS(null, "fill", "#007bff");    
-        svgbox.appendChild(rect);
-        blocks[top_id] = new Transistor(top_id, 1, rect);
-        top_id = top_id + 1;
+    if (elem_class == "draggable pos transistor" || elem_class == "all"){
+        svg = spawn_("image", "pos transistor", 0, 0, 12, 8, "transistor_pos", -1);
+        blocks[top_id] = new Transistor(top_id, -1, svg);
     }
     if (elem_class == "draggable neg transistor" || elem_class == "all"){
-        const rect = document.createElementNS("http://www.w3.org/2000/svg", "image");
-        //const rect = document.createElement("box");
-        //rect.setAttributeNS(null, "class", "draggable");
-        //rect.classList.add("transistor");
-        rect.setAttributeNS(null, "class", "draggable neg transistor");
-        rect.setAttributeNS(null, "width", 12);
-        rect.setAttributeNS(null, "height", 8);
-        rect.setAttributeNS(null, "x", 0);
-        rect.setAttributeNS(null, "y", 8);
-        //rect.setAttributeNS(null, "href", "transistor3.svg")
-        rect.setAttributeNS(null, "href", "sprites/transistor_neg.svg")
-        rect.setAttributeNS(null, "id", top_id);
-        rect.setAttributeNS(null, "position", "relative");
-        rect.setAttributeNS(null, "z-index", -1);
-        //rect.setAttributeNS(null, "fill", "#007bff");
-        svgbox.appendChild(rect);
-        blocks[top_id] = new Transistor(top_id, -1, rect);
-        top_id = top_id + 1;
-    }
-    if (elem_class == "draggable bar" || elem_class == "all"){
-        const rect = document.createElementNS("http://www.w3.org/2000/svg", "image");
-        //const rect = document.createElement("box");
-        //rect.setAttributeNS(null, "class", "draggable");
-        //rect.classList.add("transistor");
-        rect.setAttributeNS(null, "class", "draggable bar");
-        rect.setAttributeNS(null, "width", 20);
-        rect.setAttributeNS(null, "height", 4);
-        rect.setAttributeNS(null, "x", 0);
-        rect.setAttributeNS(null, "y", 16);
-        //rect.setAttributeNS(null, "href", "transistor3.svg")
-        rect.setAttributeNS(null, "href", "sprites/bar.svg")
-        rect.setAttributeNS(null, "id", top_id);
-        rect.setAttributeNS(null, "z-index", -1);
-        //rect.setAttributeNS(null, "fill", "#007bff");
-        svgbox.appendChild(rect);
-        blocks[top_id] = new Bar(top_id, rect);
-        top_id = top_id + 1;
+        svg = spawn_("image", "neg transistor", 0, 8, 12, 8, "transistor_neg", -1);
+        blocks[top_id] = new Transistor(top_id, 1, svg);
     }
     if (elem_class == "draggable vdd" || elem_class == "all"){
-        const rect = document.createElementNS("http://www.w3.org/2000/svg", "image");
-        //const rect = document.createElement("box");
-        //rect.setAttributeNS(null, "class", "draggable");
-        //rect.classList.add("transistor");
-        rect.setAttributeNS(null, "class", "draggable vdd");
-        rect.setAttributeNS(null, "width", 4);
-        rect.setAttributeNS(null, "height", 4);
-        rect.setAttributeNS(null, "x", 0);
-        rect.setAttributeNS(null, "y", 20);
-        //rect.setAttributeNS(null, "href", "transistor3.svg")
-        rect.setAttributeNS(null, "href", "sprites/vdd.svg")
-        rect.setAttributeNS(null, "id", top_id);
-        rect.setAttributeNS(null, "position", "relative");
-        rect.setAttributeNS(null, "z-index", 1);
-        //rect.setAttributeNS(null, "fill", "#007bff");
-        svgbox.appendChild(rect);
-        blocks[top_id] = new Node(top_id, "supply", rect);
-        top_id = top_id + 1;
+        svg = spawn_("image", "vdd", 0, 20, 4, 4, "vdd", 1);
+        blocks[top_id] = new Node(top_id, "supply", svg);
     }
     if (elem_class == "draggable gnd" || elem_class == "all"){
-        const rect = document.createElementNS("http://www.w3.org/2000/svg", "image");
-        //const rect = document.createElement("box");
-        //rect.setAttributeNS(null, "class", "draggable");
-        //rect.classList.add("transistor");
-        rect.setAttributeNS(null, "class", "draggable gnd");
-        rect.setAttributeNS(null, "width", 4);
-        rect.setAttributeNS(null, "height", 4);
-        rect.setAttributeNS(null, "x", 0);
-        rect.setAttributeNS(null, "y", 24);
-        //rect.setAttributeNS(null, "href", "transistor3.svg")
-        rect.setAttributeNS(null, "href", "sprites/gnd.svg")
-        rect.setAttributeNS(null, "id", top_id);
-        rect.setAttributeNS(null, "z-index", 1);
-        //rect.setAttributeNS(null, "fill", "#007bff");
-        svgbox.appendChild(rect);
-        blocks[top_id] = new Node(top_id, "ground", rect);
-        top_id = top_id + 1;
+        svg = spawn_("image", "gnd", 0, 24, 4, 4, "gnd", 1);
+        blocks[top_id] = new Node(top_id, "ground", svg);
     }
     if (elem_class == "draggable x" || elem_class == "all"){
-        const rect = document.createElementNS("http://www.w3.org/2000/svg", "image");
-        //const rect = document.createElement("box");
-        //rect.setAttributeNS(null, "class", "draggable");
-        //rect.classList.add("transistor");
-        rect.setAttributeNS(null, "class", "draggable x");
-        rect.setAttributeNS(null, "title", "x");
-        rect.setAttributeNS(null, "width", 4);
-        rect.setAttributeNS(null, "height", 4);
-        rect.setAttributeNS(null, "x", 0);
-        rect.setAttributeNS(null, "y", 28);
-        //rect.setAttributeNS(null, "href", "transistor3.svg")
-        rect.setAttributeNS(null, "href", "sprites/x.svg")
-        rect.setAttributeNS(null, "id", top_id);
-        rect.setAttributeNS(null, "z-index", 1);
-        //rect.setAttributeNS(null, "fill", "#007bff");
-        svgbox.appendChild(rect);
-        blocks[top_id] = new Node(top_id, "input", rect);
-        top_id = top_id + 1;
+        svg = spawn_("image", "x", 0, 28, 4, 4, "x", 1);
+        blocks[top_id] = new Node(top_id, "input", svg);
     }
     if (elem_class == "draggable t" || elem_class == "all"){
-        const rect = document.createElementNS("http://www.w3.org/2000/svg", "image");
-        //const rect = document.createElement("box");
-        //rect.setAttributeNS(null, "class", "draggable");
-        //rect.classList.add("transistor");
-        rect.setAttributeNS(null, "class", "draggable t");
-        rect.setAttributeNS(null, "width", 4);
-        rect.setAttributeNS(null, "height", 4);
-        rect.setAttributeNS(null, "x", 0);
-        rect.setAttributeNS(null, "y", 32);
-        //rect.setAttributeNS(null, "href", "transistor3.svg")
-        rect.setAttributeNS(null, "href", "sprites/t.svg")
-        rect.setAttributeNS(null, "id", top_id);
-        rect.setAttributeNS(null, "position", "relative");
-        rect.setAttributeNS(null, "z-index", 1);
-        //rect.setAttributeNS(null, "fill", "#007bff");
-        svgbox.appendChild(rect);
-        blocks[top_id] = new Node(top_id, "output", rect);
-        top_id = top_id + 1;
+        svg = spawn_("image", "t", 0, 32, 4, 4, "t", 1);
+        blocks[top_id] = new Node(top_id, "output", svg);
     }
     if (elem_class == "draggable isolator" || elem_class == "all"){
-        const rect = document.createElementNS("http://www.w3.org/2000/svg", "image");
-        //const rect = document.createElement("box");
-        //rect.setAttributeNS(null, "class", "draggable");
-        //rect.classList.add("transistor");
-        rect.setAttributeNS(null, "class", "draggable isolator");
-        rect.setAttributeNS(null, "width", 4);
-        rect.setAttributeNS(null, "height", 4);
-        rect.setAttributeNS(null, "x", 0);
-        rect.setAttributeNS(null, "y", 36);
-        //rect.setAttributeNS(null, "href", "transistor3.svg")
-        rect.setAttributeNS(null, "href", "sprites/b.svg")
-        rect.setAttributeNS(null, "id", top_id);
-        rect.setAttributeNS(null, "position", "relative");
-        rect.setAttributeNS(null, "z-index", 1);        
-        //rect.setAttributeNS(null, "fill", "#007bff");
-        svgbox.appendChild(rect);
-        blocks[top_id] = new Node(top_id, "isolator", rect);
-        top_id = top_id + 1;
+        svg = spawn_("image", "isolator", 0, 36, 4, 4, "b", 1);
+        blocks[top_id] = new Node(top_id, "isolator", svg);
     }
+    top_id = top_id + 1;
+}
+
+function spawn_(svg_type, class_name, x0, y0, width, height, filename, zindex){
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", svg_type);
+        svg.setAttributeNS(null, "class", `draggable ${class_name}`);
+        svg.setAttributeNS(null, "width", width);
+        svg.setAttributeNS(null, "height", height);
+        svg.setAttributeNS(null, "x", x0);
+        svg.setAttributeNS(null, "y", y0);
+        if(filename){ svg.setAttributeNS(null, "href", `sprites/${filename}.svg`); }
+        svg.setAttributeNS(null, "id", top_id);
+        svg.setAttributeNS(null, "z-index", zindex);
+        svgbox.appendChild(svg);
+        return svg
 }
 
 function sort_zorder(){
@@ -519,14 +388,7 @@ function sort_zorder(){
 function httpPostAsync(url, callback, json_data)
 {
     var xhr = new XMLHttpRequest();
-    /*
-    xmlHttp.onreadystatechange = function() { 
-        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
-            parse_response(xmlHttp.responseText);
-    }
-    xmlHttp.open("POST", url, false); // false for synchronous 
-    xmlHttp.send(null);
-    */
+
     xhr.onreadystatechange = function() { 
         if (xhr.readyState == 4 && xhr.status == 200)
             callback(xhr.responseText);
@@ -733,9 +595,6 @@ function highlight_selected_blocks(selected_blocks){
 }
 
 function highlight_connected_region(x, y){
-    //highlight_tiles([{x: 10, y: 10}, {x: 10, y: 11}]);
-    //highlight_tiles([{"x": x, "y": y}]);
-    //set_message("highlighted");
     var json_data = {};
     for (id in blocks){
         if(blocks[id].moved || 0){
@@ -755,9 +614,6 @@ function generate_highlight_tiles(color){
         const svgbox = document.getElementById("svgbox");
         for (idx in tiles){
             const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-            //console.log(tiles[idx]);
-            //console.log(tiles[idx]["x"]);
-            //console.log(tiles[idx]["y"]);
             rect.setAttributeNS(null, "x", tiles[idx]["x"] * 4);
             rect.setAttributeNS(null, "y", tiles[idx]["y"] * 4);
             rect.setAttributeNS(null, "width", 4);
